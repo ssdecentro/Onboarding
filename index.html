@@ -1260,6 +1260,24 @@ tbody tr:hover td{background:var(--surf);}
   </div>
 </div>
 
+<!-- MERCHANT: REQUEST AGENT HELP MODAL -->
+<div class="modal-overlay" id="modal-reqagent" onclick="closeModal('modal-reqagent')">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <h2>Request an agent to help fill</h2>
+    <p class="modal-sub">Your Decentro account manager will assign an agent to help you complete this application.</p>
+    <div class="am-card-row" style="margin-bottom:14px"><div class="am-av">AK</div><div><div class="am-name">Aishwarya K.</div><div class="am-role">Account Manager, Decentro</div><div class="am-email">aishwarya@decentro.tech</div></div></div>
+    <div class="mf"><label>Which step do you need help with?</label>
+      <select id="rq-step" style="width:100%;height:40px;padding:0 12px;border-radius:var(--r);border:1px solid var(--bdr);font-size:13px;font-family:var(--font);color:var(--fg);background:var(--bg)"></select></div>
+    <div class="mf"><label>What do you need help with? (optional)</label><textarea id="rq-note" placeholder="e.g. I'm not sure which documents to upload for our entity type."></textarea></div>
+    <div class="modal-info"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg>An authorised Decentro agent will help complete your form. You stay in control — you can review everything before it's submitted.</div>
+    <div class="modal-divider"></div>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeModal('modal-reqagent')">Cancel</button>
+      <button class="btn-primary" onclick="submitReqAgent()">Send request</button>
+    </div>
+  </div>
+</div>
+
 <!-- CHATBOT (fixed bottom right) -->
 <div id="chatbot-wrap" style="display:none">
   <div id="chatbot" style="pointer-events:none">
@@ -1456,6 +1474,7 @@ const STATE = {
   selSvcs: new Set(),
   appId: '',
   coName: '',
+  agentHelpRequested: false,   // merchant raised an agent-help request
 };
 
 // ═══════════════════════════════════════════════════════════════
@@ -1788,13 +1807,25 @@ function renderGuide(stepNum, mode) {
       </div>
     </div>` : '';
 
-  // Merchant: account manager card + help hint
+  // Merchant: account manager card + agent-help request + help hint
+  const reqBlock = STATE.agentHelpRequested
+    ? `<div style="display:flex;gap:9px;margin-top:12px;padding:10px 11px;background:var(--gl);border:1px solid var(--gm);border-radius:var(--r)">
+         <div style="width:7px;height:7px;border-radius:50%;background:var(--green);margin-top:4px;flex-shrink:0"></div>
+         <div><div style="font-size:12px;font-weight:700;color:var(--green)">Agent help requested</div>
+         <div style="font-size:11px;color:var(--sub);line-height:1.5;margin-top:2px">Aishwarya K. has been notified and will assign an agent to help complete your form. You'll get an email shortly.</div></div>
+       </div>`
+    : `<button onclick="openReqAgent()" style="width:100%;margin-top:12px;display:inline-flex;align-items:center;justify-content:center;gap:7px;height:38px;border:none;border-radius:var(--r);background:var(--black);color:#fff;font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer">
+         <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="6" cy="5.5" r="2.5"/><path d="M1.5 13.5c0-2.5 2-4.5 4.5-4.5M11 6.5v4M9 8.5h4"/></svg>
+         Request an agent to help fill
+       </button>
+       <div style="font-size:11px;color:var(--muted);margin-top:7px;line-height:1.5">Stuck on a step? Ask Decentro to have an agent complete it with you — your account manager is notified instantly.</div>`;
   const merchantMeta = mode === 'merchant' ? `
     <div class="rail-card">
       <div class="rail-pad">
         <div class="rail-sec-lbl">Your account manager</div>
         <div class="am-card-row" style="margin-top:8px"><div class="am-av">AK</div><div><div class="am-name">Aishwarya K.</div><div class="am-role">Account Manager, Decentro</div><div class="am-email">aishwarya@decentro.tech</div></div></div>
-        <div class="help-ai-hint">Tap the <span class="ib-inline">i</span> on any field for an instant explanation, or hit <strong>Ask AI →</strong>.</div>
+        ${reqBlock}
+        <div class="help-ai-hint" style="margin-top:12px">Tap the <span class="ib-inline">i</span> on any field for an instant explanation, or hit <strong>Ask AI →</strong>.</div>
       </div>
     </div>` : '';
 
@@ -2093,6 +2124,7 @@ function launchMerchant(appId, coName, startStep, isFresh) {
   STATE.coName = coName;
   STATE.doneSteps.clear();
   STATE.selSvcs.clear();
+  STATE.agentHelpRequested = false;
 
   // Switch shells
   document.getElementById('admin-shell').style.display   = 'none';
@@ -2431,6 +2463,27 @@ function confirmAgent(){
   document.getElementById('admin-chip-agent').style.display='flex';
   showToast('Agent invite sent — they now have access to this form');
   document.getElementById('ag-name').value=''; document.getElementById('ag-email').value=''; document.getElementById('ag-btn').disabled=true;
+}
+
+// ── Merchant: request an agent to help fill the form ──
+function openReqAgent(){
+  const sel=document.getElementById('rq-step');
+  if(sel){
+    sel.innerHTML='<option value="general">General help</option>'+
+      STEPS.map((s,i)=>`<option value="${i+1}"${(i+1)===STATE.curStep?' selected':''}>Step ${i+1} — ${s.merchantName}</option>`).join('');
+  }
+  const note=document.getElementById('rq-note'); if(note) note.value='';
+  document.getElementById('modal-reqagent').classList.add('open');
+}
+function submitReqAgent(){
+  closeModal('modal-reqagent');
+  STATE.agentHelpRequested=true;
+  const pill=document.getElementById('m-status-pill');
+  if(pill) pill.innerHTML='<span class="merchant-status-dot" style="background:#F59E0B"></span>Agent help requested';
+  // Re-render only the rail so entered field values are preserved
+  const guideEl=document.getElementById('merchant-guide-panel');
+  if(guideEl) guideEl.innerHTML=renderGuide(STATE.curStep,'merchant');
+  showToast('Request sent — your account manager will assign an agent');
 }
 
 // ═══════════════════════════════════════════════════════════════
