@@ -1,0 +1,1538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Decentro — Application Manager</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --black:#0A0A0A;--black-h:#1C1C1C;--white:#fff;
+  --s1:#fff;--s2:#F7F7F7;--s3:#F0F0F0;--s4:#E8E8E8;
+  --b1:#E2E2E2;--b2:#CACACA;--b3:#B0B0B0;
+  --t1:#0A0A0A;--t2:#525252;--t3:#8C8C8C;--t4:#ADADAD;
+  --green:#1A7A4A;--gl:#F0FAF4;--gm:#D1F0DE;
+  --amber:#7A5200;--al:#FDF8EE;--am:#FDEFC6;
+  --red:#891C1C;--rl:#FDF2F2;--rm:#FBDDDD;
+  --blue:#1A4C8A;--bl:#F0F5FD;--bm:#D3E3F8;
+  --purple:#4A1A8A;--pl:#F5F0FD;--pm:#E0D3F8;
+  --teal:#0D5C52;--tl:#F0FAF8;--tm:#C8EDE8;
+  --dec-bg:#EBF2FF;--dec-tx:#1A4C8A;
+  --dfin-bg:#EBF8F5;--dfin-tx:#0D5C52;
+  --ifsc-bg:#F5EEFF;--ifsc-tx:#4A1A8A;
+  --sw:224px;--r-sm:6px;--r-md:8px;--r-lg:10px;--r-xl:12px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-serif;background:var(--s2);color:var(--t1);height:100vh;overflow:hidden;display:flex;-webkit-font-smoothing:antialiased;}
+
+/* ── BUTTONS ── */
+.btn-p{display:inline-flex;align-items:center;gap:6px;background:var(--black);color:var(--white);border:1px solid var(--black);border-radius:var(--r-md);padding:7px 14px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;white-space:nowrap;transition:background .15s;}
+.btn-p:hover{background:var(--black-h);}
+.btn-p:disabled{opacity:.35;cursor:not-allowed;}
+.btn-p svg,.btn-s svg,.btn-g svg{width:12px;height:12px;flex-shrink:0;}
+.btn-s{display:inline-flex;align-items:center;gap:6px;background:var(--white);color:var(--t1);border:1px solid var(--black);border-radius:var(--r-md);padding:7px 14px;font-size:13px;cursor:pointer;font-family:inherit;white-space:nowrap;transition:background .15s;}
+.btn-s:hover{background:var(--s2);}
+.btn-g{display:inline-flex;align-items:center;gap:6px;background:transparent;color:var(--t2);border:1px solid var(--b2);border-radius:var(--r-md);padding:7px 14px;font-size:13px;cursor:pointer;font-family:inherit;white-space:nowrap;transition:background .15s;}
+.btn-g:hover{background:var(--s3);}
+.btn-row{display:inline-flex;align-items:center;gap:4px;background:var(--white);color:var(--t1);border:1px solid var(--b2);border-radius:var(--r-sm);padding:5px 10px;font-size:11px;cursor:pointer;font-family:inherit;white-space:nowrap;transition:background .12s;}
+.btn-row:hover{background:var(--s3);}
+.btn-row.blk{background:var(--black);color:var(--white);border-color:var(--black);}
+.btn-row.blk:hover{background:var(--black-h);}
+.btn-row svg{width:10px;height:10px;}
+.btn-warn{display:inline-flex;align-items:center;gap:4px;background:var(--al);color:var(--amber);border:1px solid var(--am);border-radius:var(--r-sm);padding:5px 10px;font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;white-space:nowrap;}
+.btn-icon{width:28px;height:28px;border:1px solid var(--b2);border-radius:var(--r-md);background:var(--white);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t3);transition:all .12s;}
+.btn-icon:hover{background:var(--s3);color:var(--t1);}
+.btn-icon svg{width:13px;height:13px;}
+
+/* ── SIDEBAR ── */
+.sb{width:var(--sw);flex-shrink:0;background:var(--s1);border-right:1px solid var(--b1);display:flex;flex-direction:column;height:100vh;overflow-y:auto;}
+.sb::-webkit-scrollbar{width:0}
+.sb-brand{display:flex;align-items:center;gap:10px;padding:16px 14px 12px;border-bottom:1px solid var(--b1);}
+.sb-icon{width:26px;height:26px;background:var(--black);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;}
+.sb-icon svg{width:13px;height:13px;fill:var(--white);}
+.sb-name{font-size:14px;font-weight:600;letter-spacing:-.2px;}
+.sb-grp{padding:12px 10px 4px;}
+.sb-gl{font-size:10px;font-weight:600;color:var(--t4);text-transform:uppercase;letter-spacing:.08em;padding:0 6px;margin-bottom:3px;}
+.ni{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:var(--r-md);font-size:13px;color:var(--t2);cursor:pointer;transition:all .1s;user-select:none;}
+.ni:hover{background:var(--s3);color:var(--t1);}
+.ni.active{background:var(--s3);color:var(--t1);font-weight:500;}
+.ni svg{width:14px;height:14px;flex-shrink:0;opacity:.5;}
+.ni.active svg{opacity:1;}
+.ni-badge{margin-left:auto;font-size:10px;font-weight:600;background:var(--black);color:var(--white);border-radius:20px;padding:1px 6px;}
+.ni-ch{margin-left:auto;width:12px;height:12px;opacity:.3;}
+.sb-foot{margin-top:auto;padding:10px 12px;border-top:1px solid var(--b1);}
+.sb-user{display:flex;align-items:center;gap:9px;padding:6px 8px;border-radius:var(--r-md);cursor:pointer;}
+.sb-user:hover{background:var(--s3);}
+.ava{width:28px;height:28px;border-radius:50%;background:var(--black);color:var(--white);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.u-name{font-size:12px;font-weight:500;}.u-email{font-size:11px;color:var(--t3);}
+
+/* ── MAIN SHELL ── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+.topbar{height:52px;flex-shrink:0;background:var(--s1);border-bottom:1px solid var(--b1);display:flex;align-items:center;padding:0 24px;gap:14px;}
+.srch{display:flex;align-items:center;gap:8px;background:var(--s2);border:1px solid var(--b1);border-radius:var(--r-md);padding:6px 11px;font-size:13px;color:var(--t3);width:210px;}
+.srch svg{width:13px;height:13px;}
+.kbd{margin-left:auto;font-size:10px;background:var(--s3);border:1px solid var(--b2);border-radius:4px;padding:1px 5px;color:var(--t3);}
+.bc{font-size:13px;color:var(--t3);}
+.bc span{color:var(--t1);font-weight:500;}
+.tb-r{margin-left:auto;display:flex;align-items:center;gap:8px;}
+
+/* ── PAGES (admin views) ── */
+.page{display:none;flex:1;overflow-y:auto;padding:24px;}
+.page.on{display:block;animation:fu .15s ease;}
+.page::-webkit-scrollbar{width:4px;}
+.page::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px;}
+@keyframes fu{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── SHARED LAYOUT ── */
+.ph{margin-bottom:20px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;}
+.ph-t{font-size:18px;font-weight:600;letter-spacing:-.3px;margin-bottom:3px;}
+.ph-s{font-size:13px;color:var(--t2);line-height:1.5;}
+.ph-a{display:flex;gap:8px;flex-shrink:0;align-items:flex-start;}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;}
+.sc{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r-lg);padding:14px 16px;}
+.sc-l{font-size:11px;color:var(--t3);margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.sdot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.sc-v{font-size:22px;font-weight:600;letter-spacing:-.5px;line-height:1;}
+.sc-s{font-size:11px;color:var(--t4);margin-top:3px;}
+.toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:12px;}
+.tabs{display:flex;gap:1px;background:var(--s3);border-radius:var(--r-md);padding:3px;}
+.tab-btn{font-size:12px;padding:5px 13px;border-radius:6px;cursor:pointer;color:var(--t2);background:transparent;border:none;font-family:inherit;transition:all .1s;}
+.tab-btn.on{background:var(--s1);color:var(--t1);font-weight:500;box-shadow:0 1px 2px rgba(0,0,0,.08);}
+.fltrs{display:flex;gap:7px;}
+.fp{display:flex;align-items:center;gap:5px;background:var(--s1);border:1px solid var(--b2);border-radius:var(--r-md);padding:5px 11px;font-size:12px;color:var(--t2);cursor:pointer;font-family:inherit;}
+.fp svg{width:11px;height:11px;}
+
+/* ── TABLE ── */
+.tcard{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r-xl);overflow:hidden;}
+table{width:100%;border-collapse:collapse;}
+thead tr{background:var(--s2);border-bottom:1px solid var(--b1);}
+th{font-size:10px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;padding:10px 14px;text-align:left;white-space:nowrap;}
+td{padding:12px 14px;border-bottom:1px solid var(--s3);vertical-align:middle;}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr{transition:background .1s;}
+tbody tr:hover td{background:var(--s2);}
+.co-name{font-size:13px;font-weight:500;}
+.co-id{font-size:10px;color:var(--t3);font-family:'SF Mono',monospace;margin-top:2px;}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:500;padding:3px 8px;border-radius:20px;white-space:nowrap;}
+.bdot{width:4px;height:4px;border-radius:50%;background:currentColor;}
+.b-bl{background:var(--bl);color:var(--blue);}
+.b-am{background:var(--al);color:var(--amber);}
+.b-gn{background:var(--gl);color:var(--green);}
+.b-gy{background:var(--s3);color:var(--t3);}
+.b-rd{background:var(--rl);color:var(--red);}
+.b-pu{background:var(--pl);color:var(--purple);}
+.etag{font-size:9px;font-weight:600;padding:2px 6px;border-radius:4px;white-space:nowrap;}
+.etag-dec{background:var(--dec-bg);color:var(--dec-tx);}
+.etag-dfin{background:var(--dfin-bg);color:var(--dfin-tx);}
+.etag-ifsc{background:var(--ifsc-bg);color:var(--ifsc-tx);}
+.etags{display:flex;gap:4px;flex-wrap:wrap;}
+.prog-l{font-size:11px;color:var(--t2);margin-bottom:5px;}
+.prog-t{height:3px;background:var(--s4);border-radius:2px;overflow:hidden;margin-bottom:4px;}
+.prog-f{height:100%;border-radius:2px;background:var(--black);}
+.prog-f.am{background:var(--amber);} .prog-f.gn{background:var(--green);} .prog-f.gy{background:var(--b3);}
+.sdots{display:flex;gap:3px;}
+.sd{width:5px;height:5px;border-radius:50%;}
+.sd-d{background:var(--black);}.sd-c{background:var(--b3);}.sd-t{background:var(--s4);border:1px solid var(--b2);}
+.who{display:flex;align-items:center;gap:6px;}
+.who-av{width:20px;height:20px;border-radius:50%;font-size:7px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.wa-blk{background:var(--black);color:var(--white);}
+.wa-gy{background:var(--s4);color:var(--t2);}
+.wa-tl{background:var(--tl);color:var(--teal);}
+.wa-pu{background:var(--pl);color:var(--purple);}
+.who-name{font-size:11px;color:var(--t2);}
+.ts{font-size:11px;color:var(--t3);}
+.row-acts{display:flex;align-items:center;gap:5px;flex-wrap:nowrap;}
+
+/* Form link cell */
+.form-link-cell{display:flex;align-items:center;gap:5px;}
+.app-id-mono{font-size:10px;font-family:'SF Mono',monospace;color:var(--t3);}
+.link-btns{display:flex;gap:3px;}
+.link-btn{width:22px;height:22px;border-radius:var(--r-sm);background:var(--s2);border:1px solid var(--b2);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t3);transition:all .1s;}
+.link-btn:hover{background:var(--s3);color:var(--t1);}
+.link-btn svg{width:10px;height:10px;}
+
+/* ══════════════════════════════
+   FORM LAYOUT (admin form)
+══════════════════════════════ */
+.form-layout{display:grid;grid-template-columns:230px 1fr;gap:18px;align-items:start;}
+.step-nav{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r-xl);padding:14px;position:sticky;top:0;}
+.sn-t{font-size:10px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;}
+.kstep{display:flex;align-items:flex-start;gap:9px;padding:7px 9px;border-radius:var(--r-md);cursor:pointer;transition:background .1s;}
+.kstep:hover{background:var(--s2);}
+.kstep.on{background:var(--s3);}
+.kstep.done .snum{background:var(--black);color:var(--white);}
+.kstep.on .snum{background:var(--black);color:var(--white);}
+.kstep.locked{opacity:.4;cursor:default;}
+.kstep.locked:hover{background:transparent;}
+.snum{width:20px;height:20px;border-radius:50%;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:var(--s4);color:var(--t2);margin-top:1px;}
+.sn-name{font-size:12px;font-weight:500;line-height:1.4;}
+.kstep.on .sn-name{font-weight:600;}
+.sn-st{font-size:10px;color:var(--t3);margin-top:1px;}
+.kstep.done .sn-st{color:var(--green);}
+.step-line{width:1px;height:6px;background:var(--b2);margin:0 0 0 16px;}
+.svc-tag{font-size:9px;font-weight:600;padding:1px 4px;border-radius:3px;background:var(--s4);color:var(--t2);margin-left:3px;}
+.who-panel{margin-top:12px;padding-top:11px;border-top:1px solid var(--b1);}
+.wp-lbl{font-size:10px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:7px;}
+.wp-row{display:flex;align-items:center;gap:8px;padding:8px 9px;background:var(--s2);border:1px solid var(--b1);border-radius:var(--r-md);margin-bottom:7px;}
+.wp-av{width:24px;height:24px;border-radius:50%;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.wp-name{font-size:12px;font-weight:500;}.wp-role{font-size:10px;color:var(--t3);}
+.wp-btns{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
+.wp-btn{font-size:11px;padding:5px;border-radius:var(--r-sm);border:1px solid var(--b2);background:var(--white);color:var(--t1);cursor:pointer;font-family:inherit;text-align:center;transition:background .1s;}
+.wp-btn:hover{background:var(--s3);}
+.ents-panel{margin-top:10px;padding-top:10px;border-top:1px solid var(--b1);}
+.ents-lbl{font-size:10px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;}
+.ents-list{display:flex;flex-direction:column;gap:4px;}
+
+/* form right */
+.form-toolbar{display:flex;align-items:center;justify-content:space-between;background:var(--s1);border:1px solid var(--b1);border-radius:var(--r-lg);padding:9px 13px;margin-bottom:11px;gap:10px;flex-wrap:wrap;}
+.ft-left{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.ft-lbl{font-size:11px;color:var(--t3);font-weight:500;}
+.pchip{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:500;padding:4px 9px;border-radius:20px;}
+.pc-you{background:var(--s3);color:var(--t1);border:1px solid var(--b2);}
+.pc-agent{background:var(--pl);color:var(--purple);border:1px solid var(--pm);}
+.pdot{width:5px;height:5px;border-radius:50%;background:currentColor;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.pdot.live{animation:blink 1.5s ease-in-out infinite;}
+.ft-r{display:flex;gap:6px;}
+.banner{display:flex;align-items:center;gap:12px;border-radius:var(--r-lg);padding:11px 14px;margin-bottom:11px;}
+.bw{background:var(--al);border:1px solid var(--am);}
+.bi{background:var(--bl);border:1px solid var(--bm);}
+.bw svg{color:var(--amber);} .bi svg{color:var(--blue);}
+.banner svg{width:14px;height:14px;flex-shrink:0;}
+.banner-text{font-size:12px;flex:1;line-height:1.5;}
+.bw .banner-text{color:var(--amber);}
+.bi .banner-text{color:var(--blue);}
+.banner-text strong{font-weight:600;}
+
+/* form cards */
+.fc{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r-xl);padding:18px;margin-bottom:11px;}
+.fc.svc-sec{border-left:3px solid var(--dec-tx);}
+.fc-hd{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:3px;}
+.fc-title{font-size:14px;font-weight:600;}
+.fc-etag{font-size:9px;font-weight:600;padding:2px 7px;border-radius:4px;background:var(--s3);color:var(--t2);flex-shrink:0;margin-top:2px;}
+.fc-sub{font-size:12px;color:var(--t2);margin-bottom:15px;line-height:1.5;}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.fw{position:relative;}
+.fw.full{grid-column:1/-1;}
+
+/* field label with info icon */
+.fl-row{display:flex;align-items:center;gap:6px;margin-bottom:5px;}
+.fl{font-size:11px;font-weight:500;color:var(--t2);display:flex;align-items:center;gap:4px;flex:1;}
+.fl .req{color:var(--red);}
+.info-btn{width:16px;height:16px;border-radius:50%;background:transparent;border:1px solid var(--b2);color:var(--t4);font-size:9px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;flex-shrink:0;font-family:inherit;line-height:1;font-style:italic;}
+.info-btn:hover{background:var(--black);color:var(--white);border-color:var(--black);}
+
+.fi{width:100%;padding:8px 10px;border-radius:var(--r-md);border:1px solid var(--b2);background:var(--white);font-size:13px;color:var(--t1);font-family:inherit;outline:none;transition:border-color .15s,box-shadow .15s;}
+.fi:focus{border-color:var(--black);box-shadow:0 0 0 3px rgba(10,10,10,.05);}
+.fi::placeholder{color:var(--t4);}
+.fsel{width:100%;padding:8px 28px 8px 10px;border-radius:var(--r-md);border:1px solid var(--b2);background:var(--white);font-size:13px;color:var(--t1);font-family:inherit;outline:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 16 16' fill='none' stroke='%238C8C8C' stroke-width='1.5'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 9px center;transition:border-color .15s;}
+.fsel:focus{border-color:var(--black);outline:none;}
+.ftx{width:100%;padding:8px 10px;border-radius:var(--r-md);border:1px solid var(--b2);background:var(--white);font-size:13px;color:var(--t1);font-family:inherit;outline:none;resize:vertical;min-height:68px;transition:border-color .15s;}
+.ftx:focus{border-color:var(--black);}
+.fhint{font-size:10px;color:var(--t3);margin-top:4px;}
+.pill-sm{font-size:9px;font-weight:600;border-radius:3px;padding:2px 5px;margin-left:3px;}
+
+.upload-zone{border:1.5px dashed var(--b2);border-radius:var(--r-lg);padding:20px;text-align:center;cursor:pointer;background:var(--s2);transition:all .15s;}
+.upload-zone:hover{border-color:var(--black);background:var(--s3);}
+.upload-zone svg{width:20px;height:20px;color:var(--t3);margin-bottom:7px;}
+.uz-t{font-size:13px;font-weight:500;color:var(--t2);margin-bottom:2px;}
+.uz-s{font-size:11px;color:var(--t3);}
+.uploaded-file{display:flex;align-items:center;gap:9px;background:var(--s2);border:1px solid var(--b1);border-radius:var(--r-md);padding:9px 11px;margin-top:7px;}
+.uf-ic{width:28px;height:28px;border-radius:var(--r-sm);background:var(--s4);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.uf-ic svg{width:14px;height:14px;color:var(--t2);}
+.uf-name{font-size:12px;font-weight:500;}.uf-sz{font-size:10px;color:var(--t3);}
+.uf-ok{margin-left:auto;font-size:10px;font-weight:500;color:var(--green);background:var(--gl);padding:2px 7px;border-radius:3px;border:1px solid var(--gm);}
+.form-foot{display:flex;align-items:center;justify-content:space-between;margin-top:16px;padding-top:14px;border-top:1px solid var(--b1);}
+.form-foot-r{display:flex;gap:7px;}
+
+/* svc cards */
+.svc-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.svc-card{border:1px solid var(--b1);border-radius:var(--r-lg);padding:13px;cursor:pointer;transition:all .15s;position:relative;background:var(--white);}
+.svc-card:hover{border-color:var(--b3);}
+.svc-card.sel{border-color:var(--black);background:var(--s2);}
+.svc-chk{position:absolute;top:10px;right:10px;width:17px;height:17px;border-radius:50%;border:1px solid var(--b2);background:var(--white);display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.svc-card.sel .svc-chk{background:var(--black);border-color:var(--black);}
+.svc-chk svg{width:8px;height:8px;display:none;}
+.svc-card.sel .svc-chk svg{display:block;}
+.svc-ico{width:28px;height:28px;border-radius:var(--r-sm);background:var(--s3);display:flex;align-items:center;justify-content:center;margin-bottom:8px;}
+.svc-ico svg{width:14px;height:14px;color:var(--t2);}
+.svc-name{font-size:12px;font-weight:600;margin-bottom:3px;}
+.svc-desc{font-size:11px;color:var(--t2);margin-bottom:6px;line-height:1.5;}
+.svc-ents{display:flex;gap:4px;flex-wrap:wrap;}
+.ent-sum{background:var(--s2);border:1px solid var(--b1);border-radius:var(--r-lg);padding:13px;margin-bottom:13px;}
+.ent-sum.hidden{display:none;}
+.es-hd{font-size:11px;font-weight:600;margin-bottom:9px;display:flex;align-items:center;gap:5px;}
+.es-hd svg{width:12px;height:12px;color:var(--t2);}
+.es-row{display:flex;align-items:flex-start;gap:12px;padding:7px 0;border-bottom:1px solid var(--b1);}
+.es-row:last-child{border-bottom:none;}
+.es-ent{font-size:12px;font-weight:500;min-width:130px;flex-shrink:0;}
+.es-docs{font-size:11px;color:var(--t2);line-height:1.7;}
+
+/* ══════════════════════════════
+   FIELD TOOLTIP (inline)
+══════════════════════════════ */
+.field-tooltip{display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:60;background:var(--white);border:1px solid var(--b1);border-radius:var(--r-lg);box-shadow:0 4px 20px rgba(0,0,0,.12),0 1px 4px rgba(0,0,0,.06);overflow:hidden;animation:ttIn .14s ease;}
+.field-tooltip.open{display:block;}
+@keyframes ttIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+.ft-header{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;padding:11px 13px 9px;border-bottom:1px solid var(--s3);}
+.ft-fn{font-size:12px;font-weight:600;}
+.ft-x{width:20px;height:20px;border-radius:var(--r-sm);background:transparent;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t3);flex-shrink:0;transition:all .1s;}
+.ft-x:hover{background:var(--s3);color:var(--t1);}
+.ft-x svg{width:10px;height:10px;}
+.ft-body{padding:10px 13px;}
+.ft-expl{font-size:12px;color:var(--t2);line-height:1.65;}
+.ft-expl strong{color:var(--t1);font-weight:600;}
+.ft-eg{margin-top:8px;background:var(--s2);border:1px solid var(--b1);border-radius:var(--r-sm);padding:7px 10px;}
+.ft-eg-lbl{font-size:9px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px;}
+.ft-eg-val{font-size:12px;color:var(--t1);font-weight:500;}
+.ft-footer{padding:9px 13px;border-top:1px solid var(--s3);background:var(--s2);display:flex;align-items:center;justify-content:space-between;}
+.ft-fn2{font-size:11px;color:var(--t3);}
+.ft-ask{display:inline-flex;align-items:center;gap:5px;background:var(--black);color:var(--white);border:none;border-radius:var(--r-sm);padding:6px 11px;font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;transition:background .15s;}
+.ft-ask:hover{background:var(--black-h);}
+.ft-ask svg{width:11px;height:11px;}
+
+/* ══════════════════════════════
+   CHATBOT (fixed bottom-right)
+══════════════════════════════ */
+.cb-wrap{position:fixed;bottom:24px;right:24px;z-index:200;pointer-events:none;}
+.chatbot{width:356px;background:var(--white);border:1px solid var(--b1);border-radius:var(--r-xl);box-shadow:0 8px 32px rgba(0,0,0,.12),0 2px 8px rgba(0,0,0,.06);display:flex;flex-direction:column;overflow:hidden;pointer-events:all;transform:scale(.92) translateY(16px);opacity:0;transform-origin:bottom right;transition:transform .22s cubic-bezier(.34,1.56,.64,1),opacity .2s ease;max-height:460px;}
+.chatbot.open{transform:scale(1) translateY(0);opacity:1;}
+.chatbot.mini{max-height:52px;overflow:hidden;}
+.cb-hdr{display:flex;align-items:center;justify-content:space-between;padding:11px 13px;background:var(--black);flex-shrink:0;}
+.cb-hdr-l{display:flex;align-items:center;gap:9px;}
+.cb-ico{width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;}
+.cb-ico svg{width:13px;height:13px;fill:var(--white);}
+.cb-title{font-size:13px;font-weight:600;color:var(--white);}
+.cb-field{font-size:10px;color:rgba(255,255,255,.5);margin-top:1px;}
+.cb-hdr-r{display:flex;gap:5px;}
+.cb-hbtn{width:24px;height:24px;border-radius:var(--r-sm);background:rgba(255,255,255,.1);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.75);transition:background .12s;}
+.cb-hbtn:hover{background:rgba(255,255,255,.2);color:var(--white);}
+.cb-hbtn svg{width:11px;height:11px;}
+.cb-ctx{display:none;padding:7px 13px;background:var(--s2);border-bottom:1px solid var(--b1);font-size:11px;color:var(--t2);align-items:center;gap:6px;}
+.cb-ctx.show{display:flex;}
+.cb-cdot{width:5px;height:5px;border-radius:50%;background:var(--green);}
+.cb-ctx strong{color:var(--t1);font-weight:500;}
+.cb-msgs{flex:1;overflow-y:auto;padding:12px 13px;display:flex;flex-direction:column;gap:8px;min-height:160px;}
+.cb-msgs::-webkit-scrollbar{width:3px;}
+.cb-msgs::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px;}
+.cb-msg{max-width:88%;font-size:12px;line-height:1.55;}
+.cb-msg.u{align-self:flex-end;background:var(--black);color:var(--white);padding:8px 11px;border-radius:var(--r-md) var(--r-md) 3px var(--r-md);}
+.cb-msg.a{align-self:flex-start;background:var(--s2);color:var(--t1);border:1px solid var(--b1);padding:8px 11px;border-radius:var(--r-md) var(--r-md) var(--r-md) 3px;}
+.cb-msg.a strong{font-weight:600;}
+.cb-load{align-self:flex-start;background:var(--s2);border:1px solid var(--b1);padding:8px 12px;border-radius:var(--r-md) var(--r-md) var(--r-md) 3px;}
+@keyframes bd{0%,80%,100%{opacity:.2}40%{opacity:1}}
+.cb-dots{display:flex;gap:3px;align-items:center;}
+.cb-dots span{width:4px;height:4px;border-radius:50%;background:var(--t3);animation:bd .9s ease-in-out infinite;}
+.cb-dots span:nth-child(2){animation-delay:.2s;}
+.cb-dots span:nth-child(3){animation-delay:.4s;}
+.cb-empty{text-align:center;padding:20px 14px;color:var(--t4);font-size:12px;line-height:1.6;}
+.cb-inp-area{padding:9px 11px;border-top:1px solid var(--b1);flex-shrink:0;}
+.cb-inp-row{display:flex;gap:6px;align-items:flex-end;}
+.cb-inp{flex:1;padding:7px 10px;border-radius:var(--r-md);border:1px solid var(--b2);font-size:12px;font-family:inherit;color:var(--t1);background:var(--white);outline:none;resize:none;min-height:32px;max-height:68px;transition:border-color .15s;line-height:1.5;}
+.cb-inp:focus{border-color:var(--black);}
+.cb-inp::placeholder{color:var(--t4);}
+.cb-send{width:30px;height:30px;border-radius:var(--r-md);background:var(--black);color:var(--white);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:background .12s;}
+.cb-send:hover{background:var(--black-h);}
+.cb-send:disabled{opacity:.3;cursor:not-allowed;}
+.cb-send svg{width:12px;height:12px;}
+
+/* ══════════════════════════════
+   MERCHANT VIEW (full-screen overlay tab simulation)
+══════════════════════════════ */
+#merchant-view{display:none;position:fixed;inset:0;z-index:500;background:var(--s2);flex-direction:column;overflow:hidden;}
+#merchant-view.show{display:flex;}
+
+.mv-topbar{height:52px;flex-shrink:0;background:var(--white);border-bottom:1px solid var(--b1);display:flex;align-items:center;padding:0 28px;gap:16px;}
+.mv-brand{display:flex;align-items:center;gap:9px;}
+.mv-brand .sb-icon{width:24px;height:24px;}
+.mv-brand .sb-icon svg{width:12px;height:12px;}
+.mv-brand-name{font-size:14px;font-weight:600;letter-spacing:-.2px;}
+.mv-sep{width:1px;height:20px;background:var(--b1);}
+.mv-app-id{font-size:11px;color:var(--t3);font-family:'SF Mono',monospace;}
+.mv-app-id strong{color:var(--t1);font-weight:500;}
+.mv-status-pill{font-size:10px;font-weight:600;background:var(--bl);color:var(--blue);border:1px solid var(--bm);border-radius:20px;padding:2px 9px;display:inline-flex;align-items:center;gap:4px;}
+.mv-status-pill .dot{width:4px;height:4px;border-radius:50%;background:currentColor;}
+.mv-right{margin-left:auto;display:flex;align-items:center;gap:8px;}
+.mv-save{font-size:12px;color:var(--t3);}
+.mv-close-btn{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--t2);background:transparent;border:1px solid var(--b2);border-radius:var(--r-md);padding:5px 11px;cursor:pointer;font-family:inherit;transition:background .12s;}
+.mv-close-btn:hover{background:var(--s3);}
+
+.mv-body{flex:1;overflow-y:auto;padding:28px 40px;max-width:860px;margin:0 auto;width:100%;}
+.mv-body::-webkit-scrollbar{width:4px;}
+.mv-body::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px;}
+
+.mv-welcome{background:var(--white);border:1px solid var(--b1);border-radius:var(--r-xl);padding:20px 24px;margin-bottom:20px;}
+.mv-welcome-hd{font-size:16px;font-weight:600;margin-bottom:4px;}
+.mv-welcome-sub{font-size:13px;color:var(--t2);line-height:1.5;}
+.mv-progress-bar{margin-top:14px;display:flex;align-items:center;gap:12px;}
+.mv-pb-track{flex:1;height:4px;background:var(--s4);border-radius:2px;overflow:hidden;}
+.mv-pb-fill{height:100%;background:var(--black);border-radius:2px;transition:width .3s ease;}
+.mv-pb-label{font-size:11px;color:var(--t3);white-space:nowrap;}
+
+/* same form components re-used inside merchant view */
+.mv-form-layout{display:grid;grid-template-columns:210px 1fr;gap:18px;align-items:start;}
+
+/* ══════════════════════════════
+   RETURN VISIT MODAL
+══════════════════════════════ */
+.rv-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.32);z-index:600;align-items:center;justify-content:center;}
+.rv-overlay.show{display:flex;}
+.rv-modal{background:var(--white);border-radius:var(--r-xl);padding:28px;width:460px;box-shadow:0 20px 56px rgba(0,0,0,.14);}
+.rv-icon{width:44px;height:44px;border-radius:var(--r-lg);background:var(--bl);border:1px solid var(--bm);display:flex;align-items:center;justify-content:center;margin-bottom:16px;}
+.rv-icon svg{width:22px;height:22px;color:var(--blue);}
+.rv-title{font-size:16px;font-weight:600;margin-bottom:6px;}
+.rv-sub{font-size:13px;color:var(--t2);line-height:1.6;margin-bottom:20px;}
+.rv-options{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;}
+.rv-opt{border:1px solid var(--b1);border-radius:var(--r-lg);padding:16px;cursor:pointer;transition:all .15s;background:var(--white);}
+.rv-opt:hover{border-color:var(--b3);background:var(--s2);}
+.rv-opt.sel{border-color:var(--black);background:var(--s2);}
+.rv-opt-ico{width:32px;height:32px;border-radius:var(--r-md);background:var(--s3);display:flex;align-items:center;justify-content:center;margin-bottom:10px;}
+.rv-opt-ico svg{width:16px;height:16px;color:var(--t2);}
+.rv-opt.sel .rv-opt-ico{background:var(--black);}
+.rv-opt.sel .rv-opt-ico svg{color:var(--white);}
+.rv-opt-title{font-size:13px;font-weight:600;margin-bottom:3px;}
+.rv-opt-sub{font-size:11px;color:var(--t2);line-height:1.5;}
+.rv-actions{display:flex;gap:8px;justify-content:flex-end;}
+
+/* ══════════════════════════════
+   MODALS (general)
+══════════════════════════════ */
+.moverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:400;align-items:center;justify-content:center;}
+.moverlay.open{display:flex;}
+.modal{background:var(--white);border-radius:var(--r-xl);padding:22px;width:440px;box-shadow:0 16px 48px rgba(0,0,0,.12),0 0 0 1px var(--b1);}
+.m-title{font-size:15px;font-weight:600;margin-bottom:4px;}
+.m-sub{font-size:13px;color:var(--t2);margin-bottom:16px;line-height:1.5;}
+.m-info{background:var(--bl);border:1px solid var(--bm);border-radius:var(--r-md);padding:10px 11px;font-size:12px;color:var(--blue);margin-bottom:13px;display:flex;gap:7px;line-height:1.5;}
+.m-info svg{width:12px;height:12px;flex-shrink:0;margin-top:1px;}
+.m-warn{background:var(--al);border:1px solid var(--am);border-radius:var(--r-md);padding:10px 11px;font-size:12px;color:var(--amber);margin-bottom:13px;display:flex;gap:7px;line-height:1.5;}
+.m-warn svg{width:12px;height:12px;flex-shrink:0;margin-top:1px;}
+.mf{margin-bottom:12px;}
+.mf label{font-size:11px;font-weight:500;color:var(--t2);display:block;margin-bottom:4px;}
+.mf input,.mf textarea{width:100%;padding:8px 10px;border-radius:var(--r-md);border:1px solid var(--b2);font-size:13px;font-family:inherit;color:var(--t1);background:var(--white);outline:none;transition:border-color .1s;}
+.mf input:focus,.mf textarea:focus{border-color:var(--black);}
+.mf input::placeholder,.mf textarea::placeholder{color:var(--t4);}
+.mf textarea{resize:none;height:60px;}
+.mf-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.es{font-size:10px;margin-top:4px;}
+.es-ok{color:var(--green);}.es-err{color:var(--red);}.es-neu{color:var(--t3);}
+.m-or{display:flex;align-items:center;gap:10px;margin:14px 0;color:var(--t3);font-size:12px;}
+.m-or::before,.m-or::after{content:'';flex:1;height:1px;background:var(--b1);}
+.m-link-box{display:flex;align-items:center;gap:8px;background:var(--s2);border:1px solid var(--b1);border-radius:var(--r-md);padding:9px 12px;}
+.m-link-val{font-size:11px;font-family:'SF Mono',monospace;color:var(--t2);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.m-link-copy{display:inline-flex;align-items:center;gap:4px;background:var(--black);color:var(--white);border:none;border-radius:var(--r-sm);padding:5px 10px;font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;flex-shrink:0;white-space:nowrap;transition:background .12s;}
+.m-link-copy:hover{background:var(--black-h);}
+.m-link-copy svg{width:10px;height:10px;}
+.m-div{height:1px;background:var(--b1);margin:14px 0;}
+.m-actions{display:flex;gap:7px;justify-content:flex-end;margin-top:16px;}
+.method-tabs{display:flex;gap:1px;background:var(--s3);border-radius:var(--r-md);padding:3px;margin-bottom:14px;}
+.method-tab{flex:1;font-size:12px;padding:6px;border-radius:6px;cursor:pointer;color:var(--t2);background:transparent;border:none;font-family:inherit;transition:all .1s;text-align:center;}
+.method-tab.on{background:var(--white);color:var(--t1);font-weight:500;box-shadow:0 1px 2px rgba(0,0,0,.08);}
+.method-pane{display:none;}
+.method-pane.on{display:block;}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:88px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--black);color:var(--white);border-radius:var(--r-md);padding:10px 16px;font-size:13px;font-weight:500;z-index:700;transition:transform .25s ease;pointer-events:none;white-space:nowrap;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+
+<!-- ════ SIDEBAR ════ -->
+<aside class="sb">
+  <div class="sb-brand">
+    <div class="sb-icon"><svg viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1" opacity=".4"/></svg></div>
+    <span class="sb-name">Decentro</span>
+  </div>
+  <div class="sb-grp">
+    <div class="sb-gl">Dashboard</div>
+    <div class="ni"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="1.5" width="5" height="5" rx="1"/><rect x="9.5" y="1.5" width="5" height="5" rx="1"/><rect x="1.5" y="9.5" width="5" height="5" rx="1"/><rect x="9.5" y="9.5" width="5" height="5" rx="1"/></svg>Overview</div>
+    <div class="ni active"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="1.5" width="5.5" height="5.5" rx="1"/><rect x="9" y="1.5" width="5.5" height="5.5" rx="1"/><rect x="1.5" y="9" width="5.5" height="5.5" rx="1"/><path d="M11.5 9v5M9 11.5h5"/></svg>Application Manager<span class="ni-badge">2</span></div>
+  </div>
+  <div class="sb-grp">
+    <div class="sb-gl">Collections</div>
+    <div class="ni"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="5.5"/><path d="M5.5 8h5M10 6l2 2-2 2"/></svg>UPI Collections</div>
+    <div class="ni"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="12" height="10" rx="1.5"/><path d="M5 7h6M5 10h4"/></svg>Virtual Accounts<svg class="ni-ch" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 4l4 4-4 4"/></svg></div>
+    <div class="ni"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 8h12M10.5 5l3 3-3 3"/></svg>Push Transactions</div>
+  </div>
+  <div class="sb-grp">
+    <div class="sb-gl">Recurring Payments</div>
+    <div class="ni"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2.5 8A5.5 5.5 0 1113 5.5M13.5 2v4h-4"/></svg>NACH</div>
+    <div class="ni"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="5.5"/><path d="M8 5v3l2 2"/></svg>Autopay</div>
+  </div>
+  <div class="sb-foot">
+    <div class="sb-user">
+      <div class="ava">DE</div>
+      <div><div class="u-name">DecStaging 1</div><div class="u-email">aishwarya@decentro.tech</div></div>
+    </div>
+  </div>
+</aside>
+
+<!-- ════ MAIN ════ -->
+<div class="main">
+  <div class="topbar">
+    <div class="srch"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6.5" cy="6.5" r="4"/><path d="M10 10l3 3"/></svg>Global Search<span class="kbd">⌘K</span></div>
+    <div class="bc" id="bc">Dashboard / <span>Application Manager</span></div>
+    <div class="tb-r">
+      <button class="btn-icon"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2a4 4 0 014 4v3l1 2H3l1-2V6a4 4 0 014-4z"/><path d="M6.5 13a1.5 1.5 0 003 0"/></svg></button>
+      <button class="btn-p" onclick="goPage('new')">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8 3v10M3 8h10"/></svg>
+        New application
+      </button>
+    </div>
+  </div>
+
+  <!-- ════ PAGE: DASHBOARD ════ -->
+  <div class="page on" id="page-am">
+    <div class="ph">
+      <div>
+        <div class="ph-t">Application Manager</div>
+        <div class="ph-s">Start applications internally or send a self-serve onboarding link directly to your merchant. Track every application from creation to completion.</div>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="sc"><div class="sc-l"><span class="sdot" style="background:var(--t3)"></span>Waiting on merchant</div><div class="sc-v">3</div><div class="sc-s">Link sent, not started</div></div>
+      <div class="sc"><div class="sc-l"><span class="sdot" style="background:var(--t1)"></span>In progress</div><div class="sc-v">4</div><div class="sc-s">Forms being filled</div></div>
+      <div class="sc"><div class="sc-l"><span class="sdot" style="background:var(--amber)"></span>Review pending</div><div class="sc-v">2</div><div class="sc-s">Agent changes to approve</div></div>
+      <div class="sc"><div class="sc-l"><span class="sdot" style="background:var(--green)"></span>Completed</div><div class="sc-v">3</div><div class="sc-s">This quarter</div></div>
+    </div>
+
+    <div class="toolbar">
+      <div class="tabs">
+        <button class="tab-btn on" onclick="setTab(this)">All</button>
+        <button class="tab-btn" onclick="setTab(this)">In progress</button>
+        <button class="tab-btn" onclick="setTab(this)">Review pending</button>
+        <button class="tab-btn" onclick="setTab(this)">Completed</button>
+      </div>
+      <div class="fltrs">
+        <button class="fp"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12M4 8h8M6 12h4"/></svg>All agents</button>
+        <button class="fp"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M5 2v3M11 2v3M2 7h12"/></svg>Last 30 days</button>
+      </div>
+    </div>
+
+    <div class="tcard">
+      <table>
+        <thead>
+          <tr>
+            <th>Company</th>
+            <th>Entities</th>
+            <th>Progress</th>
+            <th>Status</th>
+            <th>Filling</th>
+            <th>Form link</th>
+            <th>Last activity</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+
+          <!-- Row 1 — Agent active, review pending -->
+          <tr>
+            <td>
+              <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                <span class="co-name">Acme Finserv Pvt. Ltd.</span>
+                <span class="badge b-pu"><span class="bdot"></span>Agent active</span>
+              </div>
+              <div class="co-id">KYB-2024-0041</div>
+            </td>
+            <td><div class="etags"><span class="etag etag-dec">Decentro India</span><span class="etag etag-dfin">Decfin India</span></div></td>
+            <td>
+              <div class="prog-l">Step 3 of 8 — Director details</div>
+              <div class="prog-t"><div class="prog-f" style="width:37%"></div></div>
+              <div class="sdots"><div class="sd sd-d"></div><div class="sd sd-d"></div><div class="sd sd-c"></div><div class="sd sd-t"></div><div class="sd sd-t"></div><div class="sd sd-t"></div><div class="sd sd-t"></div><div class="sd sd-t"></div></div>
+            </td>
+            <td><span class="badge b-am"><span class="bdot"></span>Review pending</span></td>
+            <td><div class="who"><div class="who-av wa-pu">PS</div><span class="who-name">Agent: Priya S.</span></div></td>
+            <td>
+              <div class="form-link-cell">
+                <button class="link-btn" onclick="openMerchantView('KYB-2024-0041','Acme Finserv Pvt. Ltd.',37,3)" title="Open merchant form">
+                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 3h3v3M13 3l-6 6M6 4H3v9h9v-3"/></svg>
+                </button>
+                <button class="link-btn" onclick="copyLink('KYB-2024-0041')" title="Copy link">
+                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="5" width="8" height="8" rx="1"/><path d="M3 11V3h8"/></svg>
+                </button>
+                <button class="link-btn" onclick="openModal('m-send-link','KYB-2024-0041','Acme Finserv Pvt. Ltd.')" title="Send to merchant">
+                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 8h12M9 4l5 4-5 4"/></svg>
+                </button>
+              </div>
+            </td>
+            <td><span class="ts">1 hr ago</span></td>
+            <td>
+              <div class="row-acts">
+                <button class="btn-row blk" onclick="goPage('review')">Review (3)</button>
+                <button class="btn-row" onclick="goPage('form')">View form</button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 2 — Merchant filling via link -->
+          <tr>
+            <td>
+              <span class="co-name">BlueOak Capital Ltd.</span>
+              <div class="co-id">KYB-2024-0039</div>
+            </td>
+            <td><div class="etags"><span class="etag etag-dec">Decentro India</span><span class="etag etag-dfin">Decfin India</span><span class="etag etag-ifsc">Decfin IFSC</span></div></td>
+            <td>
+              <div class="prog-l">Step 6 of 9 — Document upload</div>
+              <div class="prog-t"><div class="prog-f am" style="width:67%"></div></div>
+              <div class="sdots"><div class="sd sd-d"></div><div class="sd sd-d"></div><div class="sd sd-d"></div><div class="sd sd-d"></div><div class="sd sd-d"></div><div class="sd sd-c"></div><div class="sd sd-t"></div><div class="sd sd-t"></div><div class="sd sd-t"></div></div>
+            </td>
+            <td><span class="badge b-am"><span class="bdot"></span>Needs attention</span></td>
+            <td><div class="who"><div class="who-av wa-tl">BO</div><span class="who-name">Merchant filling</span></div></td>
+            <td>
+              <div class="form-link-cell">
+                <button class="link-btn" onclick="openMerchantView('KYB-2024-0039','BlueOak Capital Ltd.',67,6)" title="Open merchant form">
+                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 3h3v3M13 3l-6 6M6 4H3v9h9v-3"/></svg>
+                </button>
+                <button class="link-btn" onclick="copyLink('KYB-2024-0039')" title="Copy link">
+                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="5" width="8" height="8" rx="1"/><path d="M3 11V3h8"/></svg>
+                </button>
+                <button class="link-btn" onclick="openModal('m-send-link','KYB-2024-0039','BlueOak Capital Ltd.')" title="Send to merchant">
+                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 8h12M9 4l5 4-5 4"/></svg>
+                </button>
+              </div>
+            </td>
+            <td><span class="ts">3 days ago</span></td>
+            <td>
+              <div class="row-acts">
+                <button class="btn-warn" onclick="goPage('form')">Take over</button>
+                <button class="btn-row" onclick="openModal('m-agent','','')">Assign agent</button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 3 — Link sent, not opened -->
+          <tr>
+            <td>
+              <span class="co-name">NorthStar Insurance</span>
+              <div class="co-id">KYB-2024-0033</div>
+            </td>
+            <td><div class="etags"><span class="etag etag-dfin">Decfin India</span></div></td>
+            <td>
+              <div class="prog-l">Not started — link sent</div>
+              <div class="prog-t"><div class="prog-f gy" style="width:0%"></div></div>
+              <div class="sdots"><div class="sd sd-t"></div><div class="sd sd-t"></div><div class="sd sd-t"></div><div class="sd sd-t"></div><div class="sd sd-t"></div><div class="sd sd-t"></div><div class="sd sd-t"></div></div>
+            </td>
+            <td><span class="badge b-gy"><span class="bdot"></span>Waiting on merchant</span></td>
+            <td><div class="who"><div class="who-av wa-gy">NS</div><span class="who-name">Link sent</span></div></td>
+            <td>
+              <div class="form-link-cell">
+                <button class="link-btn" onclick="openMerchantView('KYB-2024-0033','NorthStar Insurance',0,1)" title="Open merchant form">
+                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 3h3v3M13 3l-6 6M6 4H3v9h9v-3"/></svg>
+                </button>
+                <button class="link-btn" onclick="copyLink('KYB-2024-0033')" title="Copy link">
+                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="5" width="8" height="8" rx="1"/><path d="M3 11V3h8"/></svg>
+                </button>
+                <button class="link-btn" onclick="openModal('m-send-link','KYB-2024-0033','NorthStar Insurance')" title="Re-send to merchant">
+                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 8h12M9 4l5 4-5 4"/></svg>
+                </button>
+              </div>
+            </td>
+            <td><span class="ts">2 days ago</span></td>
+            <td>
+              <div class="row-acts">
+                <button class="btn-row" onclick="showToast('Link resent to contact@northstar.in')">Resend link</button>
+                <button class="btn-row" onclick="openModal('m-agent','','')">Assign agent</button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row 4 — Completed -->
+          <tr>
+            <td>
+              <span class="co-name">Zenith Payments Ltd.</span>
+              <div class="co-id">KYB-2024-0037</div>
+            </td>
+            <td><div class="etags"><span class="etag etag-dec">Decentro India</span><span class="etag etag-dfin">Decfin India</span><span class="etag etag-ifsc">Decfin IFSC</span></div></td>
+            <td>
+              <div class="prog-l">Complete</div>
+              <div class="prog-t"><div class="prog-f gn" style="width:100%"></div></div>
+              <div class="sdots"><div class="sd sd-d"></div><div class="sd sd-d"></div><div class="sd sd-d"></div><div class="sd sd-d"></div><div class="sd sd-d"></div><div class="sd sd-d"></div><div class="sd sd-d"></div><div class="sd sd-d"></div><div class="sd sd-d"></div></div>
+            </td>
+            <td><span class="badge b-gn"><span class="bdot"></span>Completed</span></td>
+            <td><div class="who"><div class="who-av wa-blk">AK</div><span class="who-name">Agent: Aishwarya K.</span></div></td>
+            <td>
+              <div class="form-link-cell">
+                <button class="link-btn" onclick="copyLink('KYB-2024-0037')" title="Copy link">
+                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="5" width="8" height="8" rx="1"/><path d="M3 11V3h8"/></svg>
+                </button>
+              </div>
+            </td>
+            <td><span class="ts">5 days ago</span></td>
+            <td><div class="row-acts"><button class="btn-row">View details</button></div></td>
+          </tr>
+
+          <!-- Row 5 — New row added by merchant restart (return visit demo) -->
+          <tr id="new-app-row" style="display:none">
+            <td>
+              <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                <span class="co-name" id="new-row-co">—</span>
+                <span class="badge b-bl"><span class="bdot"></span>New (fresh start)</span>
+              </div>
+              <div class="co-id" id="new-row-id">KYB-2024-0042</div>
+            </td>
+            <td><div class="etags"><span class="etag etag-dec">Decentro India</span></div></td>
+            <td>
+              <div class="prog-l">Step 1 of 8 — Just started</div>
+              <div class="prog-t"><div class="prog-f" style="width:4%"></div></div>
+              <div class="sdots"><div class="sd sd-c"></div><div class="sd sd-t"></div><div class="sd sd-t"></div><div class="sd sd-t"></div><div class="sd sd-t"></div><div class="sd sd-t"></div><div class="sd sd-t"></div><div class="sd sd-t"></div></div>
+            </td>
+            <td><span class="badge b-bl"><span class="bdot"></span>In progress</span></td>
+            <td><div class="who"><div class="who-av wa-gy">M</div><span class="who-name">Merchant filling</span></div></td>
+            <td>
+              <div class="form-link-cell">
+                <button class="link-btn" onclick="copyLink('KYB-2024-0042')" title="Copy link">
+                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="5" width="8" height="8" rx="1"/><path d="M3 11V3h8"/></svg>
+                </button>
+              </div>
+            </td>
+            <td><span class="ts">Just now</span></td>
+            <td><div class="row-acts"><button class="btn-row" onclick="openMerchantView('KYB-2024-0042','Acme Finserv',4,1)">View form</button></div></td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ════ PAGE: NEW APPLICATION WIZARD ════ -->
+  <div class="page" id="page-new">
+    <div class="ph">
+      <div>
+        <div class="ph-t" id="app-co">New application</div>
+        <div class="ph-s" id="app-step-lbl">Step 1 of 8 · Service selection</div>
+      </div>
+      <div class="ph-a">
+        <button class="btn-g" onclick="goPage('am')">← Back</button>
+      </div>
+    </div>
+
+    <div class="form-layout">
+      <!-- Step nav -->
+      <div class="step-nav">
+        <div class="sn-t">KYB form — 8 steps</div>
+        <div class="kstep on" id="step-1" onclick="goAdminStep(1)"><div class="snum" id="snum-1">1</div><div><div class="sn-name">Service selection</div><div class="sn-st" id="sst-1">In progress</div></div></div>
+        <div class="step-line"></div>
+        <div class="kstep locked" id="step-2" onclick="goAdminStep(2)"><div class="snum" id="snum-2">2</div><div><div class="sn-name">Company details</div><div class="sn-st" id="sst-2">Not started</div></div></div>
+        <div class="step-line"></div>
+        <div class="kstep locked" id="step-3" onclick="goAdminStep(3)"><div class="snum" id="snum-3">3</div><div><div class="sn-name">Director details</div><div class="sn-st" id="sst-3">Not started</div></div></div>
+        <div class="step-line"></div>
+        <div class="kstep locked" id="step-4" onclick="goAdminStep(4)"><div class="snum" id="snum-4">4</div><div><div class="sn-name">UBO declaration</div><div class="sn-st" id="sst-4">Not started</div></div></div>
+        <div class="step-line"></div>
+        <div class="kstep locked" id="step-5" onclick="goAdminStep(5)"><div class="snum" id="snum-5">5</div><div><div class="sn-name">Financial details</div><div class="sn-st" id="sst-5">Not started</div></div></div>
+        <div class="step-line"></div>
+        <div class="kstep locked" id="step-6" onclick="goAdminStep(6)"><div class="snum" id="snum-6">6</div><div><div class="sn-name">PA licence docs<span class="svc-tag" id="pa-tag" style="display:none">Payments</span></div><div class="sn-st" id="sst-6">Not started</div></div></div>
+        <div class="step-line"></div>
+        <div class="kstep locked" id="step-7" onclick="goAdminStep(7)"><div class="snum" id="snum-7">7</div><div><div class="sn-name">Document upload</div><div class="sn-st" id="sst-7">Not started</div></div></div>
+        <div class="step-line"></div>
+        <div class="kstep locked" id="step-8" onclick="goAdminStep(8)"><div class="snum" id="snum-8">8</div><div><div class="sn-name">Review &amp; submit</div><div class="sn-st" id="sst-8">Not started</div></div></div>
+
+        <div class="who-panel">
+          <div class="wp-lbl">Filled by</div>
+          <div class="wp-row"><div class="wp-av" style="background:var(--black);color:var(--white)">AK</div><div><div class="wp-name">You (admin)</div><div class="wp-role">Filling now</div></div></div>
+          <div class="wp-btns">
+            <button class="wp-btn" onclick="openSendLinkModal()">Send to merchant</button>
+            <button class="wp-btn" onclick="openModal('m-agent','','')">Assign agent</button>
+          </div>
+        </div>
+        <div class="ents-panel" id="ents-p" style="display:none">
+          <div class="ents-lbl">Onboarding to</div>
+          <div class="ents-list" id="ents-l"></div>
+        </div>
+      </div>
+
+      <!-- Form right -->
+      <div>
+        <div class="form-toolbar">
+          <div class="ft-left">
+            <span class="ft-lbl">On this form:</span>
+            <div class="pchip pc-you"><span class="pdot live"></span>You (admin)</div>
+            <div class="pchip pc-agent" id="chip-agent" style="display:none"><span class="pdot live"></span>Agent</div>
+          </div>
+          <div class="ft-r">
+            <button class="btn-g" style="font-size:11px;padding:5px 10px" onclick="openSendLinkModal()">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 8h12M9 4l5 4-5 4"/></svg>
+              Send to merchant
+            </button>
+            <button class="btn-g" style="font-size:11px;padding:5px 10px" onclick="openModal('m-agent','','')">Assign agent</button>
+          </div>
+        </div>
+
+        <!-- STEP 1: Services -->
+        <div id="astep-1">
+          <div class="fc">
+            <div class="fc-hd"><div class="fc-title">Select services</div></div>
+            <div class="fc-sub">Choose what this company is signing up for. Configures the form and determines entity DB entries.</div>
+            <div class="svc-grid">
+              <div class="svc-card" id="svc-p" onclick="toggleSvc('svc-p',this)"><div class="svc-chk"><svg viewBox="0 0 16 16" fill="none" stroke="var(--white)" stroke-width="2.5"><path d="M3 8l3.5 3.5L13 5"/></svg></div><div class="svc-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="3.5" width="13" height="9" rx="1.5"/><path d="M1.5 7h13M5 10h3"/></svg></div><div class="svc-name">Payment collections (domestic)</div><div class="svc-desc">UPI, NACH, Virtual Accounts. PA licence docs required.</div><div class="svc-ents"><span class="etag etag-dec">Decentro India</span><span class="etag etag-dfin">Decfin India</span></div></div>
+              <div class="svc-card" id="svc-k" onclick="toggleSvc('svc-k',this)"><div class="svc-chk"><svg viewBox="0 0 16 16" fill="none" stroke="var(--white)" stroke-width="2.5"><path d="M3 8l3.5 3.5L13 5"/></svg></div><div class="svc-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="5.5" r="2.5"/><path d="M2.5 14c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/><path d="M11 9l2 2 3-3"/></svg></div><div class="svc-name">KYC / AML validation</div><div class="svc-desc">PAN, Aadhaar, bank verification via Decentro APIs.</div><div class="svc-ents"><span class="etag etag-dec">Decentro India</span></div></div>
+              <div class="svc-card" id="svc-l" onclick="toggleSvc('svc-l',this)"><div class="svc-chk"><svg viewBox="0 0 16 16" fill="none" stroke="var(--white)" stroke-width="2.5"><path d="M3 8l3.5 3.5L13 5"/></svg></div><div class="svc-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2v12M5 5h4.5a2.5 2.5 0 010 5H5M5 10h5"/></svg></div><div class="svc-name">Lending infrastructure</div><div class="svc-desc">Loan origination, disbursements, collections.</div><div class="svc-ents"><span class="etag etag-dfin">Decfin India</span></div></div>
+              <div class="svc-card" id="svc-i" onclick="toggleSvc('svc-i',this)"><div class="svc-chk"><svg viewBox="0 0 16 16" fill="none" stroke="var(--white)" stroke-width="2.5"><path d="M3 8l3.5 3.5L13 5"/></svg></div><div class="svc-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1.5l6 4v5l-6 4-6-4v-5z"/></svg></div><div class="svc-name">GIFT City / IFSC services</div><div class="svc-desc">International payments, forex, cross-border.</div><div class="svc-ents"><span class="etag etag-ifsc">Decfin IFSC</span></div></div>
+            </div>
+          </div>
+          <div class="ent-sum hidden" id="ent-sum"><div class="es-hd"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg>DB entries will be created in</div><div id="es-body"></div></div>
+          <div class="form-foot">
+            <button class="btn-g" onclick="goPage('am')">Cancel</button>
+            <div class="form-foot-r">
+              <button class="btn-g" id="send-link-btn" style="display:none" onclick="openSendLinkModal()">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 8h12M9 4l5 4-5 4"/></svg>
+                Send to merchant instead
+              </button>
+              <button class="btn-p" id="astep1-next" onclick="nextAdminStep(1)" disabled style="opacity:.35;cursor:not-allowed">Continue filling <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 5l3 3-3 3"/></svg></button>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 2: Company details -->
+        <div id="astep-2" style="display:none">
+          <div class="fc">
+            <div class="fc-hd"><div class="fc-title">Company details</div><span class="fc-etag">Common — all entities</span></div>
+            <div class="fc-sub">Basic company information shared across all selected entities.</div>
+            <div class="fg">
+              <div class="fw"><div class="fl-row"><div class="fl">Legal company name <span class="req">*</span></div><button class="info-btn" onclick="showTT(event,'Legal company name','The <strong>official registered name</strong> exactly as it appears in the MCA database and Certificate of Incorporation. Do not use a trading name.','e.g. Acme Finserv Private Limited')">i</button></div><input class="fi" type="text" id="co-name-in" placeholder="As per MCA registration" oninput="updateCoName()"/><div class="field-tooltip" id="tt-0"></div></div>
+              <div class="fw"><div class="fl-row"><div class="fl">CIN / Registration number</div><button class="info-btn" onclick="showTT(event,'CIN','The <strong>Corporate Identification Number</strong> — 21-character code assigned by MCA at registration. Find it on your Certificate of Incorporation.','e.g. U72900MH2020PTC000000')">i</button></div><input class="fi" type="text" placeholder="U72900MH2020PTC000000"/><div class="field-tooltip" id="tt-1"></div></div>
+              <div class="fw"><div class="fl-row"><div class="fl">Type of entity <span class="req">*</span></div><button class="info-btn" onclick="showTT(event,'Type of entity','The <strong>legal structure</strong> of your business. Most tech startups are Private Limited companies.','e.g. Private Limited')">i</button></div><select class="fsel"><option>Private Limited</option><option>Public Limited</option><option>LLP</option><option>Partnership</option><option>Sole Proprietorship</option></select><div class="field-tooltip" id="tt-2"></div></div>
+              <div class="fw"><div class="fl-row"><div class="fl">Date of incorporation <span class="req">*</span></div><button class="info-btn" onclick="showTT(event,'Date of incorporation','The date your company was officially registered with the ROC. Appears on your <strong>Certificate of Incorporation</strong>.','e.g. 15/03/2018')">i</button></div><input class="fi" type="text" placeholder="DD/MM/YYYY"/><div class="field-tooltip" id="tt-3"></div></div>
+              <div class="fw full"><div class="fl-row"><div class="fl">Registered office address <span class="req">*</span></div><button class="info-btn" onclick="showTT(event,'Registered address','The <strong>official address registered with MCA</strong> — must match MoA and GST certificate exactly.','e.g. 5th Floor, ABC Tower, MG Road, Bangalore 560001')">i</button></div><input class="fi" type="text" placeholder="Full registered address as per MoA"/><div class="field-tooltip" id="tt-4"></div></div>
+              <div class="fw"><div class="fl-row"><div class="fl">PAN (company) <span class="req">*</span></div><button class="info-btn" onclick="showTT(event,'Company PAN','The <strong>company\'s Permanent Account Number</strong> — not a personal PAN. 10-character alphanumeric code in format AAAAA0000A.','e.g. AACCA1234B')">i</button></div><input class="fi" type="text" placeholder="AAAAA0000A"/><div class="field-tooltip" id="tt-5"></div></div>
+              <div class="fw"><div class="fl-row"><div class="fl">Contact email <span class="req">*</span></div><button class="info-btn" onclick="showTT(event,'Contact email','<strong>Primary business email</strong> for API credentials, compliance updates, and settlement notifications. Use an admin or shared inbox.','e.g. admin@acmefinserv.com')">i</button></div><input class="fi" type="email" placeholder="admin@company.com"/><div class="field-tooltip" id="tt-6"></div></div>
+              <div class="fw"><div class="fl-row"><div class="fl">GSTIN</div><button class="info-btn" onclick="showTT(event,'GSTIN','Your <strong>GST Identification Number</strong> — 15-character code. Optional if GST-exempt.','e.g. 29AACCA1234B1ZK')">i</button></div><input class="fi" type="text" placeholder="22AAAAA0000A1Z5"/><div class="field-tooltip" id="tt-7"></div></div>
+              <div class="fw full"><div class="fl-row"><div class="fl">Business description</div><button class="info-btn" onclick="showTT(event,'Business description','<strong>Plain-English explanation</strong> of your products/services, customers, and how money flows through your business. 2–3 sentences.','e.g. B2B SaaS for logistics. Businesses pay monthly via NACH.')">i</button></div><textarea class="ftx" placeholder="Brief description of primary business activities…"></textarea><div class="field-tooltip" id="tt-8"></div></div>
+            </div>
+          </div>
+          <div class="form-foot"><button class="btn-g" onclick="prevAdminStep(2)">← Previous</button><div class="form-foot-r"><button class="btn-g" onclick="showToast('Draft saved')">Save draft</button><button class="btn-p" onclick="nextAdminStep(2)">Save &amp; next <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 5l3 3-3 3"/></svg></button></div></div>
+        </div>
+
+        <!-- STEP 3: Director details -->
+        <div id="astep-3" style="display:none">
+          <div class="fc">
+            <div class="fc-hd"><div class="fc-title">Director details</div><span class="fc-etag">Common — all entities</span></div>
+            <div class="fc-sub">Primary director or authorised signatory. Shared across all entities.</div>
+            <div class="fg">
+              <div class="fw"><div class="fl-row"><div class="fl">Full name <span class="req">*</span></div><button class="info-btn" onclick="showTT(event,'Director full name','The <strong>complete legal name</strong> exactly as on their PAN card. Include middle name if present.','e.g. Rajiv Kumar Mehta')">i</button></div><input class="fi" type="text" id="fi-name" placeholder="Exactly as on PAN card"/><div class="field-tooltip" id="tt-d0"></div></div>
+              <div class="fw"><div class="fl-row"><div class="fl">Designation <span class="req">*</span></div><button class="info-btn" onclick="showTT(event,'Designation','The <strong>official job title</strong> within the company. Should match MCA records.','e.g. Managing Director')">i</button></div><input class="fi" type="text" id="fi-desg" placeholder="e.g. Managing Director"/><div class="field-tooltip" id="tt-d1"></div></div>
+              <div class="fw" id="fw-pan"><div class="fl-row"><div class="fl">PAN number <span class="req">*</span><span id="lbl-pan"></span></div><button class="info-btn" onclick="showTT(event,'Director PAN','The <strong>personal PAN card number</strong> — format ABCDE1234F. Different from the company PAN.','e.g. ABCDE1234F')">i</button></div><input class="fi" type="text" id="fi-pan" placeholder="ABCDE1234F"/><div class="fhint" id="hint-pan"></div><div class="field-tooltip" id="tt-d2"></div></div>
+              <div class="fw"><div class="fl-row"><div class="fl">Date of birth <span class="req">*</span></div><button class="info-btn" onclick="showTT(event,'Date of birth','Director\'s <strong>date of birth as on their PAN card</strong>. Format DD/MM/YYYY.','e.g. 12/04/1978')">i</button></div><input class="fi" type="text" id="fi-dob" placeholder="DD/MM/YYYY"/><div class="field-tooltip" id="tt-d3"></div></div>
+              <div class="fw full" id="fw-address"><div class="fl-row"><div class="fl">Residential address <span class="req">*</span><span id="lbl-addr"></span></div><button class="info-btn" onclick="showTT(event,'Residential address','The director\'s <strong>current home address</strong> — not the company office. Should match Aadhaar.','e.g. 14, Palm Ave, Indiranagar, Bangalore 560038')">i</button></div><input class="fi" type="text" id="fi-addr" placeholder="Current home address"/><div class="fhint" id="hint-addr"></div><div class="field-tooltip" id="tt-d4"></div></div>
+              <div class="fw"><div class="fl-row"><div class="fl">DIN number</div><button class="info-btn" onclick="showTT(event,'DIN','<strong>Director Identification Number</strong> — unique 8-digit number assigned by MCA. Required for Pvt Ltd/Public Ltd directors.','e.g. 07423811')">i</button></div><input class="fi" type="text" placeholder="8-digit DIN"/><div class="field-tooltip" id="tt-d5"></div></div>
+              <div class="fw"><div class="fl-row"><div class="fl">Mobile number <span class="req">*</span></div><button class="info-btn" onclick="showTT(event,'Mobile number','<strong>Active mobile number linked to Aadhaar</strong>. Used for OTP-based identity verification.','e.g. +91 98765 43210')">i</button></div><input class="fi" type="text" placeholder="+91 XXXXX XXXXX"/><div class="field-tooltip" id="tt-d6"></div></div>
+            </div>
+          </div>
+          <div class="form-foot"><button class="btn-g" onclick="prevAdminStep(3)">← Previous</button><div class="form-foot-r"><button class="btn-g" onclick="showToast('Draft saved')">Save draft</button><button class="btn-p" onclick="nextAdminStep(3)">Save &amp; next <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 5l3 3-3 3"/></svg></button></div></div>
+        </div>
+
+        <!-- STEP 4–7 condensed -->
+        <div id="astep-4" style="display:none">
+          <div class="fc"><div class="fc-hd"><div class="fc-title">UBO declaration</div><span class="fc-etag">Common — all entities</span></div><div class="fc-sub">Declare all beneficial owners with ≥ 10% ownership or voting rights as per PMLA.</div><div class="fg"><div class="fw"><div class="fl-row"><div class="fl">Full name <span class="req">*</span></div><button class="info-btn" onclick="showTT(event,'UBO','Any individual who <strong>owns or controls 10%+</strong> shares or voting rights — directly or indirectly. Required under PMLA.','e.g. Arun Sharma')">i</button></div><input class="fi" type="text" placeholder="Legal name as per PAN"/><div class="field-tooltip"></div></div><div class="fw"><div class="fl-row"><div class="fl">Ownership % <span class="req">*</span></div><button class="info-btn" onclick="showTT(event,'Ownership %','The <strong>percentage of shares or voting rights</strong>. Include indirect holdings.','e.g. 51%')">i</button></div><input class="fi" type="text" placeholder="e.g. 51%"/><div class="field-tooltip"></div></div><div class="fw"><div class="fl-row"><div class="fl">PAN / Passport</div><button class="info-btn" onclick="showTT(event,'PAN or Passport','<strong>PAN for Indian nationals</strong> (ABCDE1234F), <strong>Passport</strong> for foreign nationals.','e.g. ABCDE1234F')">i</button></div><input class="fi" type="text" placeholder="ABCDE1234F"/><div class="field-tooltip"></div></div><div class="fw"><div class="fl-row"><div class="fl">Nationality</div><button class="info-btn" onclick="showTT(event,'Nationality','Country of citizenship. Foreign nationals need <strong>additional documents</strong> like a passport copy.','e.g. Indian')">i</button></div><input class="fi" type="text" placeholder="e.g. Indian"/><div class="field-tooltip"></div></div></div></div>
+          <div class="form-foot"><button class="btn-g" onclick="prevAdminStep(4)">← Previous</button><div class="form-foot-r"><button class="btn-g" onclick="showToast('Draft saved')">Save draft</button><button class="btn-p" onclick="nextAdminStep(4)">Save &amp; next <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 5l3 3-3 3"/></svg></button></div></div>
+        </div>
+
+        <div id="astep-5" style="display:none">
+          <div class="fc"><div class="fc-hd"><div class="fc-title">Financial details</div><span class="fc-etag">Common — all entities</span></div><div class="fc-sub">Financial information for risk assessment and compliance.</div><div class="fg"><div class="fw"><div class="fl-row"><div class="fl">Annual turnover (FY 2023–24) <span class="req">*</span></div><button class="info-btn" onclick="showTT(event,'Annual turnover','Total <strong>gross revenue for FY 2023–24</strong> from audited financials or ITR.','e.g. ₹ 1,20,00,000')">i</button></div><input class="fi" type="text" placeholder="₹ 0,00,00,000"/><div class="field-tooltip"></div></div><div class="fw"><div class="fl-row"><div class="fl">Net worth (latest) <span class="req">*</span></div><button class="info-btn" onclick="showTT(event,'Net worth','Total assets minus liabilities. <strong>PA licence requires minimum ₹15 crore</strong>.','e.g. ₹ 15,00,00,000')">i</button></div><input class="fi" type="text" placeholder="₹ 0,00,00,000"/><div class="field-tooltip"></div></div><div class="fw"><div class="fl-row"><div class="fl">Primary bank <span class="req">*</span></div><button class="info-btn" onclick="showTT(event,'Primary bank','Bank where your <strong>main settlement account</strong> is held.','e.g. HDFC Bank')">i</button></div><input class="fi" type="text" placeholder="e.g. HDFC Bank"/><div class="field-tooltip"></div></div><div class="fw"><div class="fl-row"><div class="fl">Account number <span class="req">*</span></div><button class="info-btn" onclick="showTT(event,'Account number','Your <strong>primary settlement account number</strong>. Verified via Penny Drop.','e.g. 50100234567890')">i</button></div><input class="fi" type="text" placeholder="XXXXXXXXXXXX"/><div class="field-tooltip"></div></div><div class="fw"><div class="fl-row"><div class="fl">IFSC code <span class="req">*</span></div><button class="info-btn" onclick="showTT(event,'IFSC code','<strong>11-character alphanumeric bank branch code</strong>. On your chequebook.','e.g. HDFC0001234')">i</button></div><input class="fi" type="text" placeholder="HDFC0001234"/><div class="field-tooltip"></div></div><div class="fw"><div class="fl-row"><div class="fl">Expected monthly volume <span class="req">*</span></div><button class="info-btn" onclick="showTT(event,'Monthly volume','<strong>Anticipated monthly transaction value</strong> once live. Best estimate — can be revised.','e.g. ₹1Cr – ₹10Cr')">i</button></div><select class="fsel"><option value="">Select range</option><option>Less than ₹10L</option><option>₹10L – ₹1Cr</option><option>₹1Cr – ₹10Cr</option><option>More than ₹10Cr</option></select><div class="field-tooltip"></div></div></div></div>
+          <div class="form-foot"><button class="btn-g" onclick="prevAdminStep(5)">← Previous</button><div class="form-foot-r"><button class="btn-g" onclick="showToast('Draft saved')">Save draft</button><button class="btn-p" onclick="nextAdminStep(5)">Save &amp; next <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 5l3 3-3 3"/></svg></button></div></div>
+        </div>
+
+        <div id="astep-6" style="display:none">
+          <div class="fc svc-sec"><div class="fc-hd"><div class="fc-title">PA licence details</div><span class="fc-etag etag-dec">Decentro India + Decfin India</span></div><div class="fc-sub">Required for Payment collections. Specific to your RBI PA licence application.</div><div class="fg"><div class="fw"><div class="fl-row"><div class="fl">Net worth certificate date <span class="req">*</span></div><button class="info-btn" onclick="showTT(event,'Certificate date','<strong>CA-certified net worth certificate</strong> date. Must be within 3 months of submission.','e.g. 10/03/2025')">i</button></div><input class="fi" type="text" placeholder="DD/MM/YYYY"/><div class="field-tooltip"></div></div><div class="fw"><div class="fl-row"><div class="fl">Certifying CA firm <span class="req">*</span></div><button class="info-btn" onclick="showTT(event,'CA firm','The <strong>ICAI-registered CA firm</strong> that issued your net worth certificate.','e.g. M/s Sharma & Associates')">i</button></div><input class="fi" type="text" placeholder="CA firm name and ICAI no."/><div class="field-tooltip"></div></div><div class="fw"><div class="fl-row"><div class="fl">Existing payment processor</div><button class="info-btn" onclick="showTT(event,'Existing processor','Current payment gateway/aggregator if any. Helps Decentro understand your <strong>migration plan</strong>.','e.g. Razorpay or None')">i</button></div><input class="fi" type="text" placeholder="e.g. Razorpay or None"/><div class="field-tooltip"></div></div><div class="fw full"><div class="fl-row"><div class="fl">Business model description <span class="req">*</span></div><button class="info-btn" onclick="showTT(event,'Business model','Describe <strong>how payments flow through your platform</strong>. RBI requires this for PA licence.','e.g. Marketplace — buyers pay us, we settle to sellers minus 2% commission')">i</button></div><textarea class="ftx" placeholder="How payments flow through your platform…"></textarea><div class="field-tooltip"></div></div></div></div>
+          <div class="form-foot"><button class="btn-g" onclick="prevAdminStep(6)">← Previous</button><div class="form-foot-r"><button class="btn-g" onclick="showToast('Draft saved')">Save draft</button><button class="btn-p" onclick="nextAdminStep(6)">Save &amp; next <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 5l3 3-3 3"/></svg></button></div></div>
+        </div>
+
+        <div id="astep-7" style="display:none">
+          <div class="fc"><div class="fc-hd"><div class="fc-title">Document upload</div><span class="fc-etag">All required</span></div><div class="fc-sub">PDF, JPG, or PNG. Max 10 MB each.</div><div style="display:flex;flex-direction:column;gap:12px;">
+            <div><div class="fl-row" style="margin-bottom:6px;"><div class="fl">Certificate of Incorporation <span class="req">*</span></div><button class="info-btn" onclick="showTT(event,'Certificate of Incorporation','<strong>Official ROC document</strong> confirming legal incorporation.','Download from mca.gov.in')">i</button></div><div class="uploaded-file"><div class="uf-ic"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 2h6l4 4v8a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1z"/><path d="M10 2v4h4"/></svg></div><div><div class="uf-name">COI_Acme.pdf</div><div class="uf-sz">1.2 MB</div></div><div class="uf-ok">Uploaded</div></div><div class="field-tooltip"></div></div>
+            <div><div class="fl-row" style="margin-bottom:6px;"><div class="fl">Memorandum of Association <span class="req">*</span></div><button class="info-btn" onclick="showTT(event,'MoA','The <strong>charter document</strong> of the company defining name, registered office, and objectives.','MCA portal or company records')">i</button></div><div class="upload-zone" onclick="showToast('Upload dialog')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 10V4M5 7l3-3 3 3"/><path d="M3 11v1a1 1 0 001 1h8a1 1 0 001-1v-1"/></svg><div class="uz-t">Click to upload MoA</div><div class="uz-s">PDF · Max 10 MB</div></div><div class="field-tooltip"></div></div>
+            <div><div class="fl-row" style="margin-bottom:6px;"><div class="fl">Board resolution <span class="req">*</span></div><button class="info-btn" onclick="showTT(event,'Board resolution','<strong>Board-authorised letter</strong> allowing a specific person to sign agreements with Decentro.','Company letterhead + ≥2 director signatures')">i</button></div><div class="upload-zone" onclick="showToast('Upload dialog')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 10V4M5 7l3-3 3 3"/><path d="M3 11v1a1 1 0 001 1h8a1 1 0 001-1v-1"/></svg><div class="uz-t">Click to upload board resolution</div><div class="uz-s">PDF · Max 10 MB</div></div><div class="field-tooltip"></div></div>
+          </div></div>
+          <div class="form-foot"><button class="btn-g" onclick="prevAdminStep(7)">← Previous</button><div class="form-foot-r"><button class="btn-g" onclick="showToast('Draft saved')">Save draft</button><button class="btn-p" onclick="nextAdminStep(7)">Save &amp; next <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 5l3 3-3 3"/></svg></button></div></div>
+        </div>
+
+        <!-- STEP 8: Review & submit -->
+        <div id="astep-8" style="display:none">
+          <div class="fc"><div class="fc-hd"><div class="fc-title">Review &amp; submit</div></div><div class="fc-sub">Review your application before final submission.</div><div style="display:flex;flex-direction:column;gap:9px;"><div style="background:var(--s2);border:1px solid var(--b1);border-radius:var(--r-md);padding:13px;"><div style="font-size:10px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:7px;">Summary</div><div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid var(--b1);"><span style="color:var(--t2)">Company</span><span style="font-weight:500" id="review-co">—</span></div><div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;"><span style="color:var(--t2)">Services</span><span style="font-weight:500" id="review-svcs">—</span></div></div><div style="background:var(--s2);border:1px solid var(--b1);border-radius:var(--r-md);padding:13px;"><div style="font-size:10px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:7px;">Entity DB entries</div><div id="review-ents" style="font-size:12px;color:var(--t2);line-height:1.8;"></div></div><div class="banner bi"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg><div class="banner-text"><strong>What happens next:</strong> The Decentro compliance team reviews within 2–5 business days. DB entries activated upon approval.</div></div></div></div>
+          <div class="form-foot"><button class="btn-g" onclick="prevAdminStep(8)">← Previous</button><button class="btn-p" onclick="submitAdminApp()"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8l3.5 3.5L13 5"/></svg>Submit application</button></div>
+        </div>
+      </div><!-- /form right -->
+    </div><!-- /form-layout -->
+  </div>
+
+  <!-- ════ PAGE: REVIEW & APPROVE ════ -->
+  <div class="page" id="page-review">
+    <div class="ph"><div><div class="ph-t">Review &amp; approve changes</div><div class="ph-s">Acme Finserv · KYB-2024-0041</div></div><div class="ph-a"><button class="btn-g" onclick="goPage('am')">← Back</button><button class="btn-p" onclick="goPage('am')">Done</button></div></div>
+    <div class="banner bw"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg><div class="banner-text"><strong>3 pending changes</strong> from ops agents. Approved changes apply immediately.</div></div>
+    <div style="background:var(--s1);border:1px solid var(--b1);border-radius:var(--r-xl);overflow:hidden;">
+      <div style="padding:14px;background:var(--s2);border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;"><span style="font-size:12px;color:var(--t2);">3 changes pending</span><div style="display:flex;gap:7px;"><button class="btn-p" style="font-size:12px;padding:6px 12px" onclick="showToast('All changes approved')">Approve all</button><button class="btn-g" style="font-size:12px;padding:6px 12px" onclick="showToast('All changes rejected')">Reject all</button></div></div>
+      <div style="padding:14px;border-bottom:1px solid var(--s3);"><div style="font-size:12px;font-weight:600;margin-bottom:3px;">Registered address</div><div style="font-size:10px;color:var(--t3);margin-bottom:10px;">Step 3 · Common — all entities</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;"><div><div style="font-size:9px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px;">Previous</div><div style="font-size:13px;padding:8px 10px;border-radius:var(--r-md);background:var(--rl);color:var(--red);text-decoration:line-through;">12, MG Road, Bangalore 560001</div></div><div><div style="font-size:9px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px;">New value</div><div style="font-size:13px;padding:8px 10px;border-radius:var(--r-md);background:var(--gl);color:var(--green);">12, MG Road, Indiranagar, Bangalore 560038</div></div></div></div>
+      <div style="padding:14px;"><div style="font-size:12px;font-weight:600;margin-bottom:3px;">Director 1 — PAN</div><div style="font-size:10px;color:var(--t3);margin-bottom:10px;">Step 3 · Common</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;"><div><div style="font-size:9px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px;">Previous</div><div style="font-size:13px;padding:8px 10px;border-radius:var(--r-md);background:var(--rl);color:var(--red);text-decoration:line-through;">ABCDE1234F</div></div><div><div style="font-size:9px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px;">New value</div><div style="font-size:13px;padding:8px 10px;border-radius:var(--r-md);background:var(--gl);color:var(--green);">ABCDE1234G</div></div></div></div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- ════════════════════════════
+     MERCHANT VIEW (full-screen)
+════════════════════════════ -->
+<div id="merchant-view">
+  <div class="mv-topbar">
+    <div class="mv-brand">
+      <div class="sb-icon"><svg viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1" opacity=".4"/></svg></div>
+      <span class="mv-brand-name">Decentro</span>
+    </div>
+    <div class="mv-sep"></div>
+    <span class="mv-app-id">Application ID: <strong id="mv-app-id-val">—</strong></span>
+    <div class="mv-status-pill"><span class="dot"></span>Onboarding in progress</div>
+    <div class="mv-right">
+      <span class="mv-save" id="mv-save-status">All changes saved</span>
+      <button class="mv-close-btn" onclick="closeMerchantView()">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+        Close preview
+      </button>
+    </div>
+  </div>
+
+  <div class="mv-body">
+
+    <!-- Welcome header for merchant -->
+    <div class="mv-welcome">
+      <div class="mv-welcome-hd" id="mv-welcome-hd">Welcome — let's get you onboarded</div>
+      <div class="mv-welcome-sub">Please fill in your company details below. You can save your progress at any point and come back later using the same link. Your Decentro account manager can see your progress and assist you.</div>
+      <div class="mv-progress-bar">
+        <div class="mv-pb-track"><div class="mv-pb-fill" id="mv-pb-fill" style="width:0%"></div></div>
+        <span class="mv-pb-label" id="mv-pb-label">0% complete</span>
+      </div>
+    </div>
+
+    <!-- Same form layout inside merchant view -->
+    <div class="mv-form-layout">
+      <!-- Merchant step nav -->
+      <div class="step-nav">
+        <div class="sn-t">Your application</div>
+        <div class="kstep on" id="mv-step-1"><div class="snum" id="mv-snum-1">1</div><div><div class="sn-name">Service selection</div><div class="sn-st" id="mv-sst-1">In progress</div></div></div>
+        <div class="step-line"></div>
+        <div class="kstep locked" id="mv-step-2"><div class="snum" id="mv-snum-2">2</div><div><div class="sn-name">Company details</div><div class="sn-st" id="mv-sst-2">Not started</div></div></div>
+        <div class="step-line"></div>
+        <div class="kstep locked" id="mv-step-3"><div class="snum" id="mv-snum-3">3</div><div><div class="sn-name">Director details</div><div class="sn-st" id="mv-sst-3">Not started</div></div></div>
+        <div class="step-line"></div>
+        <div class="kstep locked" id="mv-step-4"><div class="snum" id="mv-snum-4">4</div><div><div class="sn-name">UBO declaration</div><div class="sn-st" id="mv-sst-4">Not started</div></div></div>
+        <div class="step-line"></div>
+        <div class="kstep locked" id="mv-step-5"><div class="snum" id="mv-snum-5">5</div><div><div class="sn-name">Financial details</div><div class="sn-st" id="mv-sst-5">Not started</div></div></div>
+        <div class="step-line"></div>
+        <div class="kstep locked" id="mv-step-6"><div class="snum" id="mv-snum-6">6</div><div><div class="sn-name">PA licence docs</div><div class="sn-st" id="mv-sst-6">Not started</div></div></div>
+        <div class="step-line"></div>
+        <div class="kstep locked" id="mv-step-7"><div class="snum" id="mv-snum-7">7</div><div><div class="sn-name">Documents</div><div class="sn-st" id="mv-sst-7">Not started</div></div></div>
+        <div class="step-line"></div>
+        <div class="kstep locked" id="mv-step-8"><div class="snum" id="mv-snum-8">8</div><div><div class="sn-name">Review &amp; submit</div><div class="sn-st" id="mv-sst-8">Not started</div></div></div>
+
+        <!-- Help panel for merchant -->
+        <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--b1);">
+          <div class="wp-lbl">Need help?</div>
+          <div style="font-size:11px;color:var(--t2);line-height:1.6;">Click the <span style="display:inline-flex;width:14px;height:14px;border-radius:50%;background:var(--black);color:var(--white);font-size:8px;font-weight:700;align-items:center;justify-content:center;margin:0 2px;font-style:italic;">i</span> on any field for an instant explanation, or use <strong>Ask AI</strong> for more help.</div>
+          <div style="margin-top:10px;padding:9px 10px;background:var(--s2);border:1px solid var(--b1);border-radius:var(--r-md);">
+            <div style="font-size:10px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px;">Your account manager</div>
+            <div style="display:flex;align-items:center;gap:8px;"><div class="ava" style="width:24px;height:24px;font-size:9px;">AK</div><div><div style="font-size:12px;font-weight:500;">Aishwarya K.</div><div style="font-size:10px;color:var(--t3);">aishwarya@decentro.tech</div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Merchant form content -->
+      <div>
+
+        <!-- STEP 1 (merchant) — services -->
+        <div id="mv-fstep-1">
+          <div class="fc">
+            <div class="fc-hd"><div class="fc-title">Which services are you signing up for?</div></div>
+            <div class="fc-sub">Select everything that applies. This determines which forms you need to fill and how many steps your application will have.</div>
+            <div class="svc-grid">
+              <div class="svc-card" id="mv-svc-p" onclick="mvToggleSvc('mv-svc-p',this)"><div class="svc-chk"><svg viewBox="0 0 16 16" fill="none" stroke="var(--white)" stroke-width="2.5"><path d="M3 8l3.5 3.5L13 5"/></svg></div><div class="svc-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="3.5" width="13" height="9" rx="1.5"/><path d="M1.5 7h13M5 10h3"/></svg></div><div class="svc-name">Payment collections (domestic)</div><div class="svc-desc">Accept payments from customers via UPI, NACH, and Virtual Accounts.</div><div class="svc-ents"><span class="etag etag-dec">Decentro India</span><span class="etag etag-dfin">Decfin India</span></div></div>
+              <div class="svc-card" id="mv-svc-k" onclick="mvToggleSvc('mv-svc-k',this)"><div class="svc-chk"><svg viewBox="0 0 16 16" fill="none" stroke="var(--white)" stroke-width="2.5"><path d="M3 8l3.5 3.5L13 5"/></svg></div><div class="svc-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="5.5" r="2.5"/><path d="M2.5 14c0-3 2.5-5 5.5-5s5.5 2 5.5 5"/><path d="M11 9l2 2 3-3"/></svg></div><div class="svc-name">KYC / AML verification</div><div class="svc-desc">Verify your customers' identity via PAN, Aadhaar, and bank account checks.</div><div class="svc-ents"><span class="etag etag-dec">Decentro India</span></div></div>
+              <div class="svc-card" id="mv-svc-l" onclick="mvToggleSvc('mv-svc-l',this)"><div class="svc-chk"><svg viewBox="0 0 16 16" fill="none" stroke="var(--white)" stroke-width="2.5"><path d="M3 8l3.5 3.5L13 5"/></svg></div><div class="svc-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2v12M5 5h4.5a2.5 2.5 0 010 5H5M5 10h5"/></svg></div><div class="svc-name">Lending infrastructure</div><div class="svc-desc">Originate, disburse, and collect loans on your platform.</div><div class="svc-ents"><span class="etag etag-dfin">Decfin India</span></div></div>
+              <div class="svc-card" id="mv-svc-i" onclick="mvToggleSvc('mv-svc-i',this)"><div class="svc-chk"><svg viewBox="0 0 16 16" fill="none" stroke="var(--white)" stroke-width="2.5"><path d="M3 8l3.5 3.5L13 5"/></svg></div><div class="svc-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1.5l6 4v5l-6 4-6-4v-5z"/></svg></div><div class="svc-name">International / GIFT City</div><div class="svc-desc">Cross-border payments and forex via our IFSC entity.</div><div class="svc-ents"><span class="etag etag-ifsc">Decfin IFSC</span></div></div>
+            </div>
+          </div>
+          <div class="form-foot">
+            <div></div>
+            <button class="btn-p" id="mv-step1-next" onclick="mvNextStep(1)" disabled style="opacity:.35;cursor:not-allowed">Continue <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 5l3 3-3 3"/></svg></button>
+          </div>
+        </div>
+
+        <!-- STEP 2 (merchant) — company details -->
+        <div id="mv-fstep-2" style="display:none">
+          <div class="fc">
+            <div class="fc-hd"><div class="fc-title">Company details</div><span class="fc-etag">Shared across all services</span></div>
+            <div class="fc-sub">Your basic company information. All fields should match your official MCA and GST records.</div>
+            <div class="fg">
+              <div class="fw"><div class="fl-row"><div class="fl">Legal company name <span class="req">*</span></div><button class="info-btn" onclick="showTT(event,'Legal company name','Your company\'s <strong>official registered name</strong> exactly as it appears in the MCA database and Certificate of Incorporation.','e.g. Acme Finserv Private Limited')">i</button></div><input class="fi" type="text" placeholder="As per MCA registration"/><div class="field-tooltip"></div></div>
+              <div class="fw"><div class="fl-row"><div class="fl">CIN / Registration number</div><button class="info-btn" onclick="showTT(event,'CIN','Your <strong>Corporate Identification Number</strong> — 21 characters, starts with a letter followed by 5 digits. Find it on your Certificate of Incorporation.','e.g. U72900MH2020PTC000000')">i</button></div><input class="fi" type="text" placeholder="U72900MH2020PTC000000"/><div class="field-tooltip"></div></div>
+              <div class="fw"><div class="fl-row"><div class="fl">Type of entity <span class="req">*</span></div><button class="info-btn" onclick="showTT(event,'Entity type','Your company\'s <strong>legal structure</strong> — most technology startups are Private Limited companies.','e.g. Private Limited')">i</button></div><select class="fsel"><option>Private Limited</option><option>Public Limited</option><option>LLP</option><option>Partnership</option><option>Sole Proprietorship</option></select><div class="field-tooltip"></div></div>
+              <div class="fw"><div class="fl-row"><div class="fl">Date of incorporation <span class="req">*</span></div><button class="info-btn" onclick="showTT(event,'Incorporation date','The date your company was officially registered — found on your <strong>Certificate of Incorporation</strong>. Format: DD/MM/YYYY.','e.g. 15/03/2018')">i</button></div><input class="fi" type="text" placeholder="DD/MM/YYYY"/><div class="field-tooltip"></div></div>
+              <div class="fw full"><div class="fl-row"><div class="fl">Registered office address <span class="req">*</span></div><button class="info-btn" onclick="showTT(event,'Registered address','Your company\'s <strong>official address with MCA</strong> — not your working office if they differ. Must match your MoA exactly.','e.g. 5th Floor, ABC Tower, MG Road, Bangalore 560001')">i</button></div><input class="fi" type="text" placeholder="Full address as per MoA"/><div class="field-tooltip"></div></div>
+              <div class="fw"><div class="fl-row"><div class="fl">Company PAN <span class="req">*</span></div><button class="info-btn" onclick="showTT(event,'Company PAN','Your <strong>company\'s tax number</strong> — a 10-character code in format AAAAA0000A. This is different from a personal PAN card.','e.g. AACCA1234B')">i</button></div><input class="fi" type="text" placeholder="AAAAA0000A"/><div class="field-tooltip"></div></div>
+              <div class="fw"><div class="fl-row"><div class="fl">Business email <span class="req">*</span></div><button class="info-btn" onclick="showTT(event,'Business email','The <strong>main email address for your business</strong>. Decentro will send API credentials, onboarding updates, and compliance notices here. Use a shared inbox if possible.','e.g. admin@acmefinserv.com')">i</button></div><input class="fi" type="email" placeholder="admin@company.com"/><div class="field-tooltip"></div></div>
+              <div class="fw"><div class="fl-row"><div class="fl">GSTIN</div><button class="info-btn" onclick="showTT(event,'GSTIN','Your <strong>GST registration number</strong>. Leave blank if your business is exempt from GST.','e.g. 29AACCA1234B1ZK')">i</button></div><input class="fi" type="text" placeholder="22AAAAA0000A1Z5"/><div class="field-tooltip"></div></div>
+            </div>
+          </div>
+          <div class="form-foot"><button class="btn-g" onclick="mvPrevStep(2)">← Previous</button><div class="form-foot-r"><button class="btn-g" onclick="showToast('Progress saved')">Save progress</button><button class="btn-p" onclick="mvNextStep(2)">Continue <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 5l3 3-3 3"/></svg></button></div></div>
+        </div>
+
+        <!-- STEP 3 (merchant) — director -->
+        <div id="mv-fstep-3" style="display:none">
+          <div class="fc">
+            <div class="fc-hd"><div class="fc-title">Director / authorised signatory</div><span class="fc-etag">Shared across all services</span></div>
+            <div class="fc-sub">Details of the primary director who will authorise this onboarding.</div>
+            <div class="fg">
+              <div class="fw"><div class="fl-row"><div class="fl">Full name <span class="req">*</span></div><button class="info-btn" onclick="showTT(event,'Full name','Enter your <strong>complete name exactly as it appears on your PAN card</strong>. Middle name must be included if present.','e.g. Rajiv Kumar Mehta')">i</button></div><input class="fi" type="text" placeholder="Exactly as on PAN card"/><div class="field-tooltip"></div></div>
+              <div class="fw"><div class="fl-row"><div class="fl">Designation <span class="req">*</span></div><button class="info-btn" onclick="showTT(event,'Designation','Your <strong>official title in the company</strong>.','e.g. Managing Director, CEO, Director')">i</button></div><input class="fi" type="text" placeholder="e.g. Managing Director"/><div class="field-tooltip"></div></div>
+              <div class="fw"><div class="fl-row"><div class="fl">PAN number <span class="req">*</span></div><button class="info-btn" onclick="showTT(event,'Your PAN','Your <strong>personal PAN card number</strong> — 10 characters, format ABCDE1234F. Not the company PAN.','e.g. ABCDE1234F')">i</button></div><input class="fi" type="text" placeholder="ABCDE1234F"/><div class="field-tooltip"></div></div>
+              <div class="fw"><div class="fl-row"><div class="fl">Date of birth <span class="req">*</span></div><button class="info-btn" onclick="showTT(event,'Date of birth','Your <strong>date of birth as on your PAN card</strong>. We use this to verify your identity with the government.','e.g. 12/04/1978')">i</button></div><input class="fi" type="text" placeholder="DD/MM/YYYY"/><div class="field-tooltip"></div></div>
+              <div class="fw full"><div class="fl-row"><div class="fl">Home address <span class="req">*</span></div><button class="info-btn" onclick="showTT(event,'Home address','Your <strong>current home address</strong> — not the company office. Ideally should match your Aadhaar-registered address.','e.g. 14, Palm Avenue, Indiranagar, Bangalore 560038')">i</button></div><input class="fi" type="text" placeholder="Your current home address"/><div class="field-tooltip"></div></div>
+              <div class="fw"><div class="fl-row"><div class="fl">DIN</div><button class="info-btn" onclick="showTT(event,'DIN','Your <strong>Director Identification Number</strong> — an 8-digit number issued by MCA. Required if you are a director of a Pvt Ltd or Public Ltd company.','e.g. 07423811')">i</button></div><input class="fi" type="text" placeholder="8-digit number"/><div class="field-tooltip"></div></div>
+              <div class="fw"><div class="fl-row"><div class="fl">Mobile number <span class="req">*</span></div><button class="info-btn" onclick="showTT(event,'Mobile number','Your <strong>current mobile number linked to Aadhaar</strong>. We\'ll use this for OTP verification.','e.g. +91 98765 43210')">i</button></div><input class="fi" type="text" placeholder="+91 XXXXX XXXXX"/><div class="field-tooltip"></div></div>
+            </div>
+          </div>
+          <div class="form-foot"><button class="btn-g" onclick="mvPrevStep(3)">← Previous</button><div class="form-foot-r"><button class="btn-g" onclick="showToast('Progress saved')">Save progress</button><button class="btn-p" onclick="mvNextStep(3)">Continue <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 5l3 3-3 3"/></svg></button></div></div>
+        </div>
+
+        <!-- STEPS 4–8 (merchant) condensed -->
+        <div id="mv-fstep-4" style="display:none">
+          <div class="fc"><div class="fc-hd"><div class="fc-title">Ownership structure</div><span class="fc-etag">Shared</span></div><div class="fc-sub">Who owns this company? Tell us about everyone who owns 10% or more of the company's shares or voting rights. This is required by Indian anti-money-laundering law (PMLA).</div><div class="fg"><div class="fw"><div class="fl-row"><div class="fl">Name <span class="req">*</span></div><button class="info-btn" onclick="showTT(event,'Owner name','The <strong>full legal name</strong> of the person who owns 10%+ of the company.','e.g. Arun Sharma')">i</button></div><input class="fi" type="text" placeholder="Full legal name"/><div class="field-tooltip"></div></div><div class="fw"><div class="fl-row"><div class="fl">Ownership % <span class="req">*</span></div><button class="info-btn" onclick="showTT(event,'Ownership %','What <strong>percentage of the company</strong> does this person own? Include both direct and indirect ownership.','e.g. 51%')">i</button></div><input class="fi" type="text" placeholder="e.g. 51%"/><div class="field-tooltip"></div></div><div class="fw"><div class="fl-row"><div class="fl">PAN / Passport</div><button class="info-btn" onclick="showTT(event,'ID document','Enter their <strong>PAN number if Indian</strong> (ABCDE1234F) or <strong>Passport number if foreign national</strong>.','e.g. ABCDE1234F')">i</button></div><input class="fi" type="text" placeholder="ABCDE1234F"/><div class="field-tooltip"></div></div><div class="fw"><div class="fl-row"><div class="fl">Nationality</div><button class="info-btn" onclick="showTT(event,'Nationality','Their <strong>country of citizenship</strong>. If they hold multiple, declare all.','e.g. Indian')">i</button></div><input class="fi" type="text" placeholder="e.g. Indian"/><div class="field-tooltip"></div></div></div></div>
+          <div class="form-foot"><button class="btn-g" onclick="mvPrevStep(4)">← Previous</button><div class="form-foot-r"><button class="btn-g" onclick="showToast('Progress saved')">Save progress</button><button class="btn-p" onclick="mvNextStep(4)">Continue <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 5l3 3-3 3"/></svg></button></div></div>
+        </div>
+
+        <div id="mv-fstep-5" style="display:none">
+          <div class="fc"><div class="fc-hd"><div class="fc-title">Financial information</div><span class="fc-etag">Shared</span></div><div class="fc-sub">Your company's recent financial figures help us configure your account limits and assess your risk profile.</div><div class="fg"><div class="fw"><div class="fl-row"><div class="fl">Annual turnover (FY 2023–24) <span class="req">*</span></div><button class="info-btn" onclick="showTT(event,'Annual turnover','Your company\'s <strong>total revenue for the last financial year</strong> (April 2023 – March 2024). You can find this in your ITR or audited financials.','e.g. ₹ 1,20,00,000 (₹1.2 crore)')">i</button></div><input class="fi" type="text" placeholder="₹ 0,00,00,000"/><div class="field-tooltip"></div></div><div class="fw"><div class="fl-row"><div class="fl">Net worth <span class="req">*</span></div><button class="info-btn" onclick="showTT(event,'Net worth','Your company\'s <strong>total assets minus total liabilities</strong> from your most recent balance sheet. If you\'re applying for a payment aggregator licence, this must be at least ₹15 crore.','e.g. ₹ 15,00,00,000')">i</button></div><input class="fi" type="text" placeholder="₹ 0,00,00,000"/><div class="field-tooltip"></div></div><div class="fw"><div class="fl-row"><div class="fl">Your bank name <span class="req">*</span></div><button class="info-btn" onclick="showTT(event,'Bank name','The name of the bank where your <strong>main business account</strong> is held. This is where Decentro will send your settlements.','e.g. HDFC Bank')">i</button></div><input class="fi" type="text" placeholder="e.g. HDFC Bank"/><div class="field-tooltip"></div></div><div class="fw"><div class="fl-row"><div class="fl">Account number <span class="req">*</span></div><button class="info-btn" onclick="showTT(event,'Account number','Your <strong>business bank account number</strong>. We will verify this account before activating settlements.','e.g. 50100234567890')">i</button></div><input class="fi" type="text" placeholder="XXXXXXXXXXXX"/><div class="field-tooltip"></div></div><div class="fw"><div class="fl-row"><div class="fl">IFSC code <span class="req">*</span></div><button class="info-btn" onclick="showTT(event,'IFSC code','Your bank branch\'s <strong>11-character routing code</strong>. You can find it on your chequebook or inside your bank\'s mobile app.','e.g. HDFC0001234')">i</button></div><input class="fi" type="text" placeholder="HDFC0001234"/><div class="field-tooltip"></div></div><div class="fw"><div class="fl-row"><div class="fl">Expected monthly payments <span class="req">*</span></div><button class="info-btn" onclick="showTT(event,'Monthly volume','Roughly <strong>how much money do you expect to process per month</strong> through Decentro? This is just an estimate — you can update it later.','e.g. ₹1Cr – ₹10Cr')">i</button></div><select class="fsel"><option value="">Select range</option><option>Less than ₹10L/month</option><option>₹10L – ₹1Cr/month</option><option>₹1Cr – ₹10Cr/month</option><option>More than ₹10Cr/month</option></select><div class="field-tooltip"></div></div></div></div>
+          <div class="form-foot"><button class="btn-g" onclick="mvPrevStep(5)">← Previous</button><div class="form-foot-r"><button class="btn-g" onclick="showToast('Progress saved')">Save progress</button><button class="btn-p" onclick="mvNextStep(5)">Continue <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 5l3 3-3 3"/></svg></button></div></div>
+        </div>
+
+        <div id="mv-fstep-6" style="display:none">
+          <div class="fc svc-sec"><div class="fc-hd"><div class="fc-title">Payment licence details</div><span class="fc-etag etag-dec">Payments only</span></div><div class="fc-sub">Required for the payment collections service. This information is submitted as part of your application for RBI's Payment Aggregator (PA) licence.</div><div class="fg"><div class="fw"><div class="fl-row"><div class="fl">Net worth certificate date <span class="req">*</span></div><button class="info-btn" onclick="showTT(event,'Certificate date','The date on your <strong>CA-certified net worth certificate</strong>. Must be dated within the last 3 months.','e.g. 10/03/2025')">i</button></div><input class="fi" type="text" placeholder="DD/MM/YYYY"/><div class="field-tooltip"></div></div><div class="fw"><div class="fl-row"><div class="fl">Your CA firm <span class="req">*</span></div><button class="info-btn" onclick="showTT(event,'CA firm','The <strong>Chartered Accountant firm</strong> that certified your net worth. They must be registered with ICAI.','e.g. M/s Sharma & Associates, ICAI No. 123456')">i</button></div><input class="fi" type="text" placeholder="CA firm name"/><div class="field-tooltip"></div></div><div class="fw"><div class="fl-row"><div class="fl">Existing payment provider</div><button class="info-btn" onclick="showTT(event,'Current provider','The payment gateway or aggregator you currently use, if any. Enter <strong>None</strong> if you\'re starting fresh.','e.g. Razorpay, None')">i</button></div><input class="fi" type="text" placeholder="e.g. Razorpay or None"/><div class="field-tooltip"></div></div><div class="fw full"><div class="fl-row"><div class="fl">How do payments work in your business? <span class="req">*</span></div><button class="info-btn" onclick="showTT(event,'Payment flow','Describe <strong>who pays you and how you pay others</strong>. For example: "Buyers pay us for orders, we pay sellers after deducting a 5% fee." RBI needs this for the PA licence.','e.g. Marketplace — buyers pay us, we split to sellers minus 2%')">i</button></div><textarea class="ftx" placeholder="e.g. We are a marketplace. Buyers pay us for purchases, and we transfer funds to sellers minus a 5% platform fee."></textarea><div class="field-tooltip"></div></div></div></div>
+          <div class="form-foot"><button class="btn-g" onclick="mvPrevStep(6)">← Previous</button><div class="form-foot-r"><button class="btn-g" onclick="showToast('Progress saved')">Save progress</button><button class="btn-p" onclick="mvNextStep(6)">Continue <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 5l3 3-3 3"/></svg></button></div></div>
+        </div>
+
+        <div id="mv-fstep-7" style="display:none">
+          <div class="fc"><div class="fc-hd"><div class="fc-title">Documents</div><span class="fc-etag">Required uploads</span></div><div class="fc-sub">Please upload clear, legible PDF copies of the following documents. Max 10 MB per file.</div><div style="display:flex;flex-direction:column;gap:12px;">
+            <div><div class="fl-row" style="margin-bottom:6px;"><div class="fl">Certificate of Incorporation <span class="req">*</span></div><button class="info-btn" onclick="showTT(event,'Certificate of Incorporation','The <strong>government-issued certificate</strong> proving your company legally exists. You can download a fresh copy from mca.gov.in.','Download from mca.gov.in')">i</button></div><div class="upload-zone" onclick="showToast('Upload dialog')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 10V4M5 7l3-3 3 3"/><path d="M3 11v1a1 1 0 001 1h8a1 1 0 001-1v-1"/></svg><div class="uz-t">Click to upload Certificate of Incorporation</div><div class="uz-s">PDF · Max 10 MB</div></div></div>
+            <div><div class="fl-row" style="margin-bottom:6px;"><div class="fl">Memorandum of Association <span class="req">*</span></div><button class="info-btn" onclick="showTT(event,'MoA','Your company\'s <strong>founding document</strong> that describes what your business is and what it is allowed to do. Also downloadable from mca.gov.in.','From MCA portal or your company records')">i</button></div><div class="upload-zone" onclick="showToast('Upload dialog')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 10V4M5 7l3-3 3 3"/><path d="M3 11v1a1 1 0 001 1h8a1 1 0 001-1v-1"/></svg><div class="uz-t">Click to upload MoA</div><div class="uz-s">PDF · Max 10 MB</div></div></div>
+            <div><div class="fl-row" style="margin-bottom:6px;"><div class="fl">Board resolution <span class="req">*</span></div><button class="info-btn" onclick="showTT(event,'Board resolution','A letter on <strong>company letterhead signed by at least 2 directors</strong>, authorising you to enter into this agreement with Decentro.','Letterhead + ≥2 director signatures')">i</button></div><div class="upload-zone" onclick="showToast('Upload dialog')"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 10V4M5 7l3-3 3 3"/><path d="M3 11v1a1 1 0 001 1h8a1 1 0 001-1v-1"/></svg><div class="uz-t">Click to upload board resolution</div><div class="uz-s">PDF · Max 10 MB</div></div></div>
+          </div></div>
+          <div class="form-foot"><button class="btn-g" onclick="mvPrevStep(7)">← Previous</button><div class="form-foot-r"><button class="btn-g" onclick="showToast('Progress saved')">Save progress</button><button class="btn-p" onclick="mvNextStep(7)">Continue <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 5l3 3-3 3"/></svg></button></div></div>
+        </div>
+
+        <div id="mv-fstep-8" style="display:none">
+          <div class="fc"><div class="fc-hd"><div class="fc-title">Review &amp; submit</div></div><div class="fc-sub">Take a final look before you submit. Once submitted, the Decentro compliance team will review your application and reach out if anything is needed.</div>
+            <div style="display:flex;flex-direction:column;gap:9px;">
+              <div style="background:var(--s2);border:1px solid var(--b1);border-radius:var(--r-md);padding:13px;"><div style="font-size:10px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;">You've completed all sections</div><div style="font-size:13px;color:var(--t2);line-height:1.6;">All required fields have been filled. Click Submit to send your application to Decentro for review.</div></div>
+              <div class="banner bi"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg><div class="banner-text"><strong>What happens next:</strong> Our compliance team reviews your application within 2–5 business days. We'll email you updates at each stage. Your account manager Aishwarya K. is available if you have questions.</div></div>
+            </div>
+          </div>
+          <div class="form-foot"><button class="btn-g" onclick="mvPrevStep(8)">← Previous</button><button class="btn-p" onclick="mvSubmit()"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8l3.5 3.5L13 5"/></svg>Submit my application</button></div>
+        </div>
+
+      </div><!-- /mv form right -->
+    </div><!-- /mv-form-layout -->
+  </div><!-- /mv-body -->
+</div><!-- /merchant-view -->
+
+<!-- ════ RETURN VISIT MODAL ════ -->
+<div class="rv-overlay" id="rv-overlay">
+  <div class="rv-modal">
+    <div class="rv-icon"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2.5 8A5.5 5.5 0 1113 5.5M13.5 2v4h-4"/></svg></div>
+    <div class="rv-title">Welcome back</div>
+    <div class="rv-sub">We found an existing application for this link (<strong id="rv-app-id">KYB-2024-0041</strong> — <span id="rv-co-name">Acme Finserv</span>). Would you like to continue where you left off, or start a brand new application?</div>
+    <div class="rv-options">
+      <div class="rv-opt sel" id="rv-opt-cont" onclick="selectRV('cont')">
+        <div class="rv-opt-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 8h9M8 5l3 3-3 3"/></svg></div>
+        <div class="rv-opt-title">Continue application</div>
+        <div class="rv-opt-sub">Pick up from where you stopped. All your previous answers are saved.</div>
+      </div>
+      <div class="rv-opt" id="rv-opt-fresh" onclick="selectRV('fresh')">
+        <div class="rv-opt-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 3v10M3 8h10"/></svg></div>
+        <div class="rv-opt-title">Start a new application</div>
+        <div class="rv-opt-sub">Begin fresh. A new application will be created and tracked separately.</div>
+      </div>
+    </div>
+    <div class="rv-actions">
+      <button class="btn-g" onclick="document.getElementById('rv-overlay').classList.remove('show')">Cancel</button>
+      <button class="btn-p" onclick="confirmRV()" id="rv-confirm">Continue application</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: SEND TO MERCHANT -->
+<div class="moverlay" id="m-send-link" onclick="mOut(event,'m-send-link')">
+  <div class="modal">
+    <div class="m-title" id="m-send-title">Send onboarding link to merchant</div>
+    <div class="m-sub">The merchant receives a personalised link to fill their onboarding form. They can save progress and return at any time.</div>
+    <div class="m-info"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg>The link is unique to this application (ID: <strong id="m-send-appid">—</strong>) and expires in 30 days. You can track their progress from the dashboard.</div>
+
+    <div class="method-tabs">
+      <button class="method-tab on" onclick="switchSendMethod(this,'mt-email')">By email</button>
+      <button class="method-tab" onclick="switchSendMethod(this,'mt-phone')">By SMS / WhatsApp</button>
+      <button class="method-tab" onclick="switchSendMethod(this,'mt-copy')">Copy link</button>
+    </div>
+
+    <!-- Email -->
+    <div class="method-pane on" id="mt-email">
+      <div class="mf-row">
+        <div class="mf"><label>Contact name</label><input type="text" id="m-contact-name" placeholder="Merchant contact person"/></div>
+        <div class="mf"><label>Email address <span style="color:var(--red)">*</span></label><input type="email" id="m-email" placeholder="merchant@company.com"/></div>
+      </div>
+      <div class="mf"><label>Personal note (optional)</label><textarea placeholder="e.g. Hi, please fill in your details at your earliest convenience. Call me if you have questions."></textarea></div>
+    </div>
+
+    <!-- SMS -->
+    <div class="method-pane" id="mt-phone">
+      <div class="mf"><label>Mobile number <span style="color:var(--red)">*</span></label><input type="tel" placeholder="+91 XXXXX XXXXX"/></div>
+      <div class="mf"><label>Message preview</label><textarea placeholder="Hi, Decentro has started your onboarding. Click [link] to fill your application. Takes about 15 minutes." readonly style="background:var(--s2);color:var(--t2);font-size:12px;"></textarea></div>
+    </div>
+
+    <!-- Copy -->
+    <div class="method-pane" id="mt-copy">
+      <div style="font-size:12px;color:var(--t2);margin-bottom:10px;line-height:1.6;">Copy this link and share it with the merchant directly — via WhatsApp, email, or any channel of your choice.</div>
+      <div class="m-link-box" id="m-link-box">
+        <span class="m-link-val" id="m-link-val">https://onboard.decentro.tech/apply/KYB-2024-0041</span>
+        <button class="m-link-copy" onclick="copyLinkFromModal()">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="5" width="8" height="8" rx="1"/><path d="M3 11V3h8"/></svg>
+          Copy
+        </button>
+      </div>
+    </div>
+
+    <div class="m-div"></div>
+    <div class="m-actions">
+      <button class="btn-g" onclick="cModal('m-send-link')">Cancel</button>
+      <button class="btn-p" onclick="sendLink()">Send link</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: ASSIGN AGENT -->
+<div class="moverlay" id="m-agent" onclick="mOut(event,'m-agent')">
+  <div class="modal">
+    <div class="m-title">Assign an ops agent</div>
+    <div class="m-sub">Enter the agent's name and work email. Only authorised Decentro agents can accept.</div>
+    <div class="m-warn"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 5v3M8 11v.5"/></svg>All agent edits go to your review queue. Nothing applies without your approval.</div>
+    <div class="mf"><label>Agent's full name <span style="color:var(--red)">*</span></label><input type="text" id="ag-name" placeholder="e.g. Priya Sharma" oninput="valAgent()"/></div>
+    <div class="mf"><label>Agent's work email <span style="color:var(--red)">*</span></label><input type="email" id="ag-email" placeholder="agent@decentro.tech" oninput="valAgent()"/><div class="es es-neu" id="ag-es">Must be a registered Decentro agent email</div></div>
+    <div class="mf"><label>Note (optional)</label><input type="text" placeholder="e.g. Please help fill director and financial details"/></div>
+    <div class="m-div"></div>
+    <div class="m-actions"><button class="btn-g" onclick="cModal('m-agent')">Cancel</button><button class="btn-p" id="ag-btn" onclick="confAgent()" disabled style="opacity:.35;cursor:not-allowed">Send invite</button></div>
+  </div>
+</div>
+
+<!-- CHATBOT (shared, fixed bottom-right, only shown inside form views) -->
+<div class="cb-wrap" id="cb-wrap">
+  <div class="chatbot" id="chatbot">
+    <div class="cb-hdr">
+      <div class="cb-hdr-l">
+        <div class="cb-ico"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5C5.24 1.5 3 3.74 3 6.5c0 1.76.9 3.3 2.27 4.21L5 12h6l-.27-1.29C12.1 9.8 13 8.26 13 6.5 13 3.74 10.76 1.5 8 1.5zM6.5 12v1.5h3V12h-3z"/></svg></div>
+        <div>
+          <div class="cb-title">Ask AI</div>
+          <div class="cb-field" id="cb-field-lbl">No field selected</div>
+        </div>
+      </div>
+      <div class="cb-hdr-r">
+        <button class="cb-hbtn" onclick="miniCB()" title="Minimise"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10"/></svg></button>
+        <button class="cb-hbtn" onclick="closeCB()" title="Close"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
+      </div>
+    </div>
+    <div class="cb-ctx" id="cb-ctx"><div class="cb-cdot"></div><span>Asking about: <strong id="cb-ctx-field">—</strong></span></div>
+    <div class="cb-msgs" id="cb-msgs">
+      <div class="cb-empty" id="cb-empty">Tap <strong>i</strong> on any field label, then click <strong>Ask AI →</strong> to start a conversation about that field.</div>
+    </div>
+    <div class="cb-inp-area">
+      <div class="cb-inp-row">
+        <textarea class="cb-inp" id="cb-inp" placeholder="Ask about this field…" rows="1" onkeydown="cbKey(event)" oninput="cbResize(this);cbToggleBtn()"></textarea>
+        <button class="cb-send" id="cb-send" onclick="cbSend()" disabled>
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 8h12M9 4l5 4-5 4"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════
+// NAVIGATION
+// ══════════════════════════
+function goPage(k){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.getElementById('page-'+k).classList.add('on');
+  const bc={am:'Application Manager',new:'Application Manager / New application',review:'Application Manager / Review &amp; Approve'};
+  document.getElementById('bc').innerHTML='Dashboard / <span>'+(bc[k]||'Application Manager')+'</span>';
+  closeAllTT();
+  // Only show chatbot on form pages
+  document.getElementById('cb-wrap').style.display=(k==='new')?'block':'none';
+}
+function setTab(el){el.closest('.tabs').querySelectorAll('.tab-btn').forEach(t=>t.classList.remove('on'));el.classList.add('on');}
+
+// ══════════════════════════
+// ADMIN FORM STEPS
+// ══════════════════════════
+let aCurStep=1; const aDone=new Set(); const selSvcs=new Set();
+const TOTAL=8;
+const stepNames=['Service selection','Company details','Director details','UBO declaration','Financial details','PA licence docs','Document upload','Review & submit'];
+
+function goAdminStep(n){
+  for(let i=1;i<=TOTAL;i++){
+    document.getElementById('astep-'+i).style.display=i===n?'block':'none';
+    const s=document.getElementById('step-'+i);
+    s.classList.remove('on','done','locked');
+    if(aDone.has(i))s.classList.add('done');
+    else if(i===n)s.classList.add('on');
+    else s.classList.add('locked');
+    document.getElementById('snum-'+i).textContent=aDone.has(i)?'✓':i;
+  }
+  aCurStep=n;
+  document.getElementById('app-step-lbl').textContent='Step '+n+' of '+TOTAL+' · '+stepNames[n-1];
+  closeAllTT();
+}
+function nextAdminStep(n){
+  aDone.add(n); document.getElementById('sst-'+n).textContent='Completed';
+  if(n===TOTAL){submitAdminApp();return;}
+  document.getElementById('sst-'+(n+1)).textContent='In progress';
+  goAdminStep(n+1);
+  if(n===7)populateReview();
+  showToast('Step '+n+' saved');
+}
+function prevAdminStep(n){goAdminStep(n-1);}
+function updateCoName(){const v=document.getElementById('co-name-in').value;document.getElementById('app-co').textContent=v||'New application';}
+function populateReview(){
+  const c=document.getElementById('co-name-in')?.value||'—';
+  document.getElementById('review-co').textContent=c;
+  const nm={'svc-p':'Payment collections','svc-k':'KYC / AML','svc-l':'Lending','svc-i':'GIFT City / IFSC'};
+  document.getElementById('review-svcs').textContent=[...selSvcs].map(id=>nm[id]).join(', ')||'—';
+  const em={'svc-p':['Decentro India','Decfin India'],'svc-k':['Decentro India'],'svc-l':['Decfin India'],'svc-i':['Decfin IFSC']};
+  const ents={};[...selSvcs].forEach(id=>(em[id]||[]).forEach(e=>{ents[e]=true;}));
+  document.getElementById('review-ents').innerHTML=Object.keys(ents).map(e=>`<div>· ${e}</div>`).join('')||'—';
+}
+function submitAdminApp(){
+  goPage('am'); showToast('Application submitted — compliance team will review within 2–5 days');
+  aCurStep=1; aDone.clear(); selSvcs.clear();
+  for(let i=1;i<=TOTAL;i++){document.getElementById('astep-'+i).style.display=i===1?'block':'none';const s=document.getElementById('step-'+i);s.classList.remove('on','done','locked');i===1?s.classList.add('on'):s.classList.add('locked');document.getElementById('snum-'+i).textContent=i;document.getElementById('sst-'+i).textContent=i===1?'In progress':'Not started';}
+  document.querySelectorAll('.svc-card').forEach(c=>{c.classList.remove('sel');c.querySelector('.svc-chk').style.background='var(--white)';c.querySelector('.svc-chk').style.borderColor='var(--b2)';c.querySelector('.svc-chk svg').style.display='none';});
+  document.getElementById('ents-p').style.display='none';document.getElementById('ent-sum').classList.add('hidden');document.getElementById('app-co').textContent='New application';document.getElementById('pa-tag').style.display='none';
+  const btn=document.getElementById('astep1-next');btn.disabled=true;btn.style.opacity='.35';btn.style.cursor='not-allowed';
+  document.getElementById('send-link-btn').style.display='none';
+}
+
+// svc cards
+const svcEnts={'svc-p':['Decentro India','Decfin India'],'svc-k':['Decentro India'],'svc-l':['Decfin India'],'svc-i':['Decfin IFSC (GIFT City)']};
+const svcDocs={'svc-p':['PA licence docs','Net worth certificate'],'svc-k':['PAN & Aadhaar verification'],'svc-l':['NBFC registration'],'svc-i':['IFSC entity registration']};
+const eCls={'Decentro India':'etag-dec','Decfin India':'etag-dfin','Decfin IFSC (GIFT City)':'etag-ifsc'};
+
+function toggleSvc(id,card){
+  const chk=card.querySelector('.svc-chk');
+  if(selSvcs.has(id)){selSvcs.delete(id);card.classList.remove('sel');chk.style.background='var(--white)';chk.style.borderColor='var(--b2)';chk.querySelector('svg').style.display='none';}
+  else{selSvcs.add(id);card.classList.add('sel');chk.style.background='var(--black)';chk.style.borderColor='var(--black)';chk.querySelector('svg').style.display='block';}
+  updateAdminEnts();
+  const ok=selSvcs.size>0;
+  const btn=document.getElementById('astep1-next');btn.disabled=!ok;btn.style.opacity=ok?'1':'.35';btn.style.cursor=ok?'pointer':'not-allowed';
+  document.getElementById('send-link-btn').style.display=ok?'inline-flex':'none';
+  document.getElementById('pa-tag').style.display=selSvcs.has('svc-p')?'inline':'none';
+}
+function updateAdminEnts(){
+  const p=document.getElementById('ents-p'),l=document.getElementById('ents-l'),s=document.getElementById('ent-sum'),b=document.getElementById('es-body');
+  if(selSvcs.size===0){p.style.display='none';s.classList.add('hidden');return;}
+  p.style.display='block';s.classList.remove('hidden');
+  const map={};[...selSvcs].forEach(id=>(svcEnts[id]||[]).forEach(e=>{if(!map[e])map[e]=[];map[e].push(...svcDocs[id]);}));
+  l.innerHTML=Object.keys(map).map(e=>`<span class="etag ${eCls[e]||''}">${e}</span>`).join('');
+  b.innerHTML=Object.entries(map).map(([e,d])=>`<div class="es-row"><div class="es-ent">${e}</div><div class="es-docs">${[...new Set(d)].map(x=>'· '+x).join('<br>')}</div></div>`).join('');
+}
+
+// ══════════════════════════
+// MERCHANT FORM STEPS
+// ══════════════════════════
+let mvCurStep=1; const mvDone=new Set(); const mvSelSvcs=new Set();
+
+function mvGoStep(n){
+  for(let i=1;i<=TOTAL;i++){
+    document.getElementById('mv-fstep-'+i).style.display=i===n?'block':'none';
+    const s=document.getElementById('mv-step-'+i);
+    s.classList.remove('on','done','locked');
+    if(mvDone.has(i))s.classList.add('done');
+    else if(i===n)s.classList.add('on');
+    else s.classList.add('locked');
+    document.getElementById('mv-snum-'+i).textContent=mvDone.has(i)?'✓':i;
+  }
+  mvCurStep=n;
+  // update progress bar
+  const pct=Math.round((mvDone.size/TOTAL)*100);
+  document.getElementById('mv-pb-fill').style.width=pct+'%';
+  document.getElementById('mv-pb-label').textContent=pct+'% complete';
+  closeAllTT();
+}
+function mvNextStep(n){
+  mvDone.add(n); document.getElementById('mv-sst-'+n).textContent='Completed';
+  if(n===TOTAL){mvSubmit();return;}
+  document.getElementById('mv-sst-'+(n+1)).textContent='In progress';
+  mvGoStep(n+1);
+  showToast('Progress saved');
+}
+function mvPrevStep(n){mvGoStep(n-1);}
+
+function mvToggleSvc(id,card){
+  const chk=card.querySelector('.svc-chk');
+  if(mvSelSvcs.has(id)){mvSelSvcs.delete(id);card.classList.remove('sel');chk.style.background='var(--white)';chk.style.borderColor='var(--b2)';chk.querySelector('svg').style.display='none';}
+  else{mvSelSvcs.add(id);card.classList.add('sel');chk.style.background='var(--black)';chk.style.borderColor='var(--black)';chk.querySelector('svg').style.display='block';}
+  const ok=mvSelSvcs.size>0;
+  const btn=document.getElementById('mv-step1-next');btn.disabled=!ok;btn.style.opacity=ok?'1':'.35';btn.style.cursor=ok?'pointer':'not-allowed';
+}
+
+function mvSubmit(){
+  closeMerchantView();
+  showToast('Application submitted — Decentro team will be in touch within 2–5 days');
+}
+
+// ══════════════════════════
+// MERCHANT VIEW (full-screen)
+// ══════════════════════════
+let mvAppId='', mvCoName='';
+
+function openMerchantView(appId, coName, progressPct, curStepNum){
+  // Simulate: if progress > 0, show return-visit modal first
+  if(progressPct > 0){
+    showReturnVisitModal(appId, coName, progressPct, curStepNum);
+    return;
+  }
+  _launchMerchantView(appId, coName, progressPct, curStepNum, false);
+}
+
+function _launchMerchantView(appId, coName, progressPct, curStepNum, isFresh){
+  mvAppId=appId; mvCoName=coName;
+  document.getElementById('mv-app-id-val').textContent=appId;
+  document.getElementById('mv-welcome-hd').textContent=isFresh?'Starting a new application':'Welcome back, '+coName;
+  document.getElementById('merchant-view').classList.add('show');
+  document.getElementById('cb-wrap').style.display='block';
+  // Reset merchant form state
+  mvDone.clear(); mvSelSvcs.clear();
+  for(let i=1;i<=TOTAL;i++){document.getElementById('mv-fstep-'+i).style.display=i===1?'block':'none';const s=document.getElementById('mv-step-'+i);s.classList.remove('on','done','locked');i===1?s.classList.add('on'):s.classList.add('locked');document.getElementById('mv-snum-'+i).textContent=i;document.getElementById('mv-sst-'+i).textContent=i===1?'In progress':'Not started';}
+  document.querySelectorAll('[id^="mv-svc-"]').forEach(c=>{c.classList.remove('sel');c.querySelector('.svc-chk').style.background='var(--white)';c.querySelector('.svc-chk').style.borderColor='var(--b2)';c.querySelector('.svc-chk svg').style.display='none';});
+  const btn=document.getElementById('mv-step1-next');btn.disabled=true;btn.style.opacity='.35';btn.style.cursor='not-allowed';
+  // Set initial progress
+  document.getElementById('mv-pb-fill').style.width=progressPct+'%';
+  document.getElementById('mv-pb-label').textContent=progressPct+'% complete';
+  // Simulate pre-filled progress
+  if(progressPct>0&&!isFresh){
+    for(let i=1;i<curStepNum;i++){mvDone.add(i);document.getElementById('mv-sst-'+i).textContent='Completed';}
+    mvGoStep(curStepNum);
+  }
+}
+
+function closeMerchantView(){
+  document.getElementById('merchant-view').classList.remove('show');
+  document.getElementById('cb-wrap').style.display='none';
+  closeCB();
+}
+
+// ══════════════════════════
+// RETURN VISIT MODAL
+// ══════════════════════════
+let rvContext={appId:'',coName:'',pct:0,step:1};
+let rvChoice='cont';
+
+function showReturnVisitModal(appId, coName, pct, step){
+  rvContext={appId,coName,pct,step};
+  document.getElementById('rv-app-id').textContent=appId;
+  document.getElementById('rv-co-name').textContent=coName;
+  document.getElementById('rv-overlay').classList.add('show');
+}
+
+function selectRV(choice){
+  rvChoice=choice;
+  document.getElementById('rv-opt-cont').classList.toggle('sel',choice==='cont');
+  document.getElementById('rv-opt-fresh').classList.toggle('sel',choice==='fresh');
+  document.getElementById('rv-confirm').textContent=choice==='cont'?'Continue application':'Start new application';
+}
+
+function confirmRV(){
+  document.getElementById('rv-overlay').classList.remove('show');
+  if(rvChoice==='fresh'){
+    // Create a new app row in dashboard, then launch fresh merchant view
+    const newId='KYB-2024-0042';
+    document.getElementById('new-app-row').style.display='table-row';
+    document.getElementById('new-row-co').textContent=rvContext.coName;
+    document.getElementById('new-row-id').textContent=newId;
+    showToast('New application '+newId+' created — fresh start for '+rvContext.coName);
+    setTimeout(()=>_launchMerchantView(newId, rvContext.coName, 0, 1, true), 400);
+  } else {
+    _launchMerchantView(rvContext.appId, rvContext.coName, rvContext.pct, rvContext.step, false);
+  }
+}
+
+// ══════════════════════════
+// SEND LINK MODAL
+// ══════════════════════════
+let sendLinkContext={appId:'',coName:''};
+
+function openModal(id, appId, coName){
+  if(id==='m-send-link'){
+    sendLinkContext={appId,coName};
+    document.getElementById('m-send-appid').textContent=appId;
+    document.getElementById('m-link-val').textContent='https://onboard.decentro.tech/apply/'+appId;
+  }
+  document.getElementById(id).classList.add('open');
+}
+
+function openSendLinkModal(){
+  // Called from within new application wizard — no existing appId yet, use placeholder
+  sendLinkContext={appId:'PENDING',coName:''};
+  document.getElementById('m-send-appid').textContent='(will be assigned on send)';
+  document.getElementById('m-link-val').textContent='https://onboard.decentro.tech/apply/KYB-2024-NEW';
+  document.getElementById('m-send-link').classList.add('open');
+}
+
+function switchSendMethod(tab,paneId){
+  document.querySelectorAll('.method-tab').forEach(t=>t.classList.remove('on'));
+  document.querySelectorAll('.method-pane').forEach(p=>p.classList.remove('on'));
+  tab.classList.add('on');
+  document.getElementById(paneId).classList.add('on');
+}
+
+function copyLinkFromModal(){
+  const val=document.getElementById('m-link-val').textContent;
+  navigator.clipboard?.writeText(val).catch(()=>{});
+  showToast('Link copied to clipboard');
+}
+
+function copyLink(appId){
+  const link='https://onboard.decentro.tech/apply/'+appId;
+  navigator.clipboard?.writeText(link).catch(()=>{});
+  showToast('Link copied — '+appId);
+}
+
+function sendLink(){
+  cModal('m-send-link');
+  showToast('Onboarding link sent to merchant');
+}
+
+// ══════════════════════════
+// FIELD TOOLTIPS (inline)
+// ══════════════════════════
+function showTT(event, fieldName, explanation, exampleVal){
+  event.stopPropagation();
+  closeAllTT();
+  const btn=event.currentTarget;
+  const fw=btn.closest('.fw')||btn.closest('div');
+  const tt=fw?.querySelector('.field-tooltip');
+  if(!tt)return;
+  tt.innerHTML=`
+    <div class="ft-header">
+      <div class="ft-fn">${fieldName}</div>
+      <button class="ft-x" onclick="closeTT(event)"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
+    </div>
+    <div class="ft-body">
+      <div class="ft-expl">${explanation}</div>
+      ${exampleVal?`<div class="ft-eg"><div class="ft-eg-lbl">Example</div><div class="ft-eg-val">${exampleVal}</div></div>`:''}
+    </div>
+    <div class="ft-footer">
+      <span class="ft-fn2">Have more questions?</span>
+      <button class="ft-ask" onclick="openCBFromTT('${fieldName.replace(/'/g,"\\'")}','${explanation.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')">
+        <svg viewBox="0 0 16 16" fill="currentColor" width="11" height="11"><path d="M8 1.5C5.24 1.5 3 3.74 3 6.5c0 1.76.9 3.3 2.27 4.21L5 12h6l-.27-1.29C12.1 9.8 13 8.26 13 6.5 13 3.74 10.76 1.5 8 1.5zM6.5 12v1.5h3V12h-3z"/></svg>
+        Ask AI →
+      </button>
+    </div>`;
+  tt.classList.add('open');
+  setTimeout(()=>{const r=tt.getBoundingClientRect();if(r.bottom>window.innerHeight-16)tt.scrollIntoView({behavior:'smooth',block:'nearest'});},40);
+}
+function closeTT(e){e.stopPropagation();closeAllTT();}
+function closeAllTT(){document.querySelectorAll('.field-tooltip.open').forEach(t=>{t.classList.remove('open');t.innerHTML='';});}
+document.addEventListener('click',e=>{if(!e.target.closest('.field-tooltip')&&!e.target.closest('.info-btn'))closeAllTT();});
+
+// ══════════════════════════
+// CHATBOT
+// ══════════════════════════
+let cbOpen=false, cbMini=false, cbField='', cbExpl='', cbHist=[];
+
+function openCBFromTT(fieldName,explanation){
+  closeAllTT();
+  cbField=fieldName; cbExpl=explanation; cbHist=[];
+  document.getElementById('cb-field-lbl').textContent=fieldName;
+  document.getElementById('cb-ctx-field').textContent=fieldName;
+  document.getElementById('cb-ctx').classList.add('show');
+  // Clear messages
+  const m=document.getElementById('cb-msgs');
+  m.querySelectorAll('.cb-msg,.cb-load').forEach(e=>e.remove());
+  document.getElementById('cb-empty').style.display='none';
+  const starter=document.createElement('div');
+  starter.className='cb-msg a';
+  starter.innerHTML=`I'm here to help with <strong>${fieldName}</strong>. What would you like to know?`;
+  m.appendChild(starter);
+  cbHist=[{role:'assistant',content:`I'm here to help with ${fieldName}. What would you like to know?`}];
+  m.scrollTop=m.scrollHeight;
+  // Open
+  cbOpen=true; cbMini=false;
+  document.getElementById('chatbot').classList.add('open');
+  document.getElementById('chatbot').style.maxHeight='';
+  document.getElementById('chatbot').style.overflow='';
+  setTimeout(()=>document.getElementById('cb-inp').focus(),260);
+}
+
+function miniCB(){
+  cbMini=!cbMini;
+  const cb=document.getElementById('chatbot');
+  if(cbMini){cb.style.maxHeight='52px';cb.style.overflow='hidden';}
+  else{cb.style.maxHeight='';cb.style.overflow='';}
+}
+function closeCB(){
+  cbOpen=false; cbMini=false;
+  document.getElementById('chatbot').classList.remove('open');
+  document.getElementById('chatbot').style.maxHeight='';
+  document.getElementById('chatbot').style.overflow='';
+  document.getElementById('cb-ctx').classList.remove('show');
+  document.getElementById('cb-field-lbl').textContent='No field selected';
+  document.getElementById('cb-empty').style.display='block';
+  document.getElementById('cb-msgs').querySelectorAll('.cb-msg').forEach(e=>e.remove());
+  cbField=''; cbHist=[];
+}
+
+function cbKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();cbSend();}}
+function cbResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,68)+'px';}
+function cbToggleBtn(){document.getElementById('cb-send').disabled=!document.getElementById('cb-inp').value.trim();}
+
+async function cbSend(){
+  const inp=document.getElementById('cb-inp');
+  const q=inp.value.trim();
+  if(!q||!cbOpen||cbMini)return;
+  inp.value=''; cbResize(inp); document.getElementById('cb-send').disabled=true;
+  document.getElementById('cb-empty').style.display='none';
+  const m=document.getElementById('cb-msgs');
+  const um=document.createElement('div');um.className='cb-msg u';um.textContent=q;m.appendChild(um);
+  cbHist.push({role:'user',content:q});m.scrollTop=m.scrollHeight;
+  const ld=document.createElement('div');ld.className='cb-load';ld.innerHTML='<div class="cb-dots"><span></span><span></span><span></span></div>';m.appendChild(ld);m.scrollTop=m.scrollHeight;
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:`You are a concise, friendly KYB onboarding assistant for Decentro — an Indian fintech infrastructure platform.\nCurrent field: "${cbField}"\nField explanation: "${cbExpl}"\nRules: 2–4 sentences max. Plain English. Indian regulatory context (RBI, MCA, PAN, Aadhaar, PMLA, GST). Concrete examples. Redirect off-topic questions politely. Use **bold** sparingly.`,messages:cbHist.map(h=>({role:h.role,content:h.content}))})});
+    const d=await r.json();
+    ld.remove();
+    const txt=(d.content&&d.content[0]&&d.content[0].text)||"Sorry, I couldn't get a response. Please try again.";
+    const fmt=txt.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+    cbHist.push({role:'assistant',content:txt});
+    const am=document.createElement('div');am.className='cb-msg a';am.innerHTML=fmt;m.appendChild(am);m.scrollTop=m.scrollHeight;
+  }catch{ld.remove();const em=document.createElement('div');em.className='cb-msg a';em.innerHTML='<span style="color:var(--red)">Couldn\'t connect. Check your connection and try again.</span>';m.appendChild(em);}
+  document.getElementById('cb-send').disabled=false;
+  document.getElementById('cb-inp').focus();
+}
+
+// ══════════════════════════
+// AGENT VALIDATION
+// ══════════════════════════
+const authD=['decentro.tech','decentro.in'];
+function valAgent(){const e=document.getElementById('ag-email').value.trim(),n=document.getElementById('ag-name').value.trim(),s=document.getElementById('ag-es');const v=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e),a=authD.some(d=>e.endsWith('@'+d));if(e&&v&&!a){s.textContent='⚠ Not a recognised Decentro agent email';s.className='es es-err';}else if(e&&v&&a){s.textContent='✓ Recognised Decentro agent email';s.className='es es-ok';}else{s.textContent='Must be a registered Decentro agent email';s.className='es es-neu';}const btn=document.getElementById('ag-btn');const ok=n&&e&&v&&a;btn.disabled=!ok;btn.style.opacity=ok?'1':'.35';btn.style.cursor=ok?'pointer':'not-allowed';}
+function confAgent(){cModal('m-agent');document.getElementById('chip-agent').style.display='flex';showToast('Agent invite sent');document.getElementById('ag-name').value='';document.getElementById('ag-email').value='';document.getElementById('ag-btn').disabled=true;document.getElementById('ag-btn').style.opacity='.35';}
+
+// ══════════════════════════
+// MODALS
+// ══════════════════════════
+function cModal(id){document.getElementById(id).classList.remove('open');}
+function mOut(e,id){if(e.target===document.getElementById(id))cModal(id);}
+
+// ══════════════════════════
+// TOAST
+// ══════════════════════════
+let tT;
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(tT);tT=setTimeout(()=>t.classList.remove('show'),2500);}
+
+// Init: hide chatbot on load (only shown inside form views)
+document.getElementById('cb-wrap').style.display='none';
+</script>
+</body>
+</html>
