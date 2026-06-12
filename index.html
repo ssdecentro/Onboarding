@@ -464,6 +464,7 @@ tbody tr:hover td{background:var(--surf);}
 .tip-box-hd{font-size:11px;font-weight:700;color:var(--amber);display:flex;align-items:center;gap:6px;margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em;}
 .tip-box-hd svg{width:12px;height:12px;}
 .tip-box-text{font-size:12px;color:var(--amber);line-height:1.6;}
+.tip-top{margin:0 0 16px;}
 
 /* Step progress card */
 .step-progress-card{background:var(--bg);border:1px solid var(--bdr);border-radius:var(--r);overflow:hidden;}
@@ -1544,15 +1545,25 @@ function renderStepContent(stepNum) {
   }
   const footer = `<div class="form-footer">${prevBtn}<div class="form-footer-right">${saveBtn}${nextBtn}</div></div>`;
 
-  if(stepNum === 1) return renderStep1(footer, isAdmin);
-  if(stepNum === 2) return renderStep2(footer, isAdmin);
-  if(stepNum === 3) return renderStep3(footer, isAdmin);
-  if(stepNum === 4) return renderStep4(footer, isAdmin);
-  if(stepNum === 5) return renderStep5(footer, isAdmin);
-  if(stepNum === 6) return renderStep6(footer, isAdmin);
-  if(stepNum === 7) return renderStep7(footer, isAdmin);
-  if(stepNum === 8) return renderStep8(footer, isAdmin);
-  return '';
+  // Tip banner shown at the TOP of the form, before the fields — so the user
+  // knows what to watch out for before filling anything in.
+  const g = GUIDES[stepNum];
+  const tipTop = (g && g.tip) ? `
+    <div class="tip-box tip-top">
+      <div class="tip-box-hd"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 5v3M8 11v.5"/></svg>Before you start — tip for this step</div>
+      <div class="tip-box-text">${g.tip}</div>
+    </div>` : '';
+
+  let content = '';
+  if(stepNum === 1) content = renderStep1(footer, isAdmin);
+  else if(stepNum === 2) content = renderStep2(footer, isAdmin);
+  else if(stepNum === 3) content = renderStep3(footer, isAdmin);
+  else if(stepNum === 4) content = renderStep4(footer, isAdmin);
+  else if(stepNum === 5) content = renderStep5(footer, isAdmin);
+  else if(stepNum === 6) content = renderStep6(footer, isAdmin);
+  else if(stepNum === 7) content = renderStep7(footer, isAdmin);
+  else if(stepNum === 8) content = renderStep8(footer, isAdmin);
+  return tipTop + content;
 }
 
 function renderStep1(footer, isAdmin) {
@@ -1829,14 +1840,8 @@ function renderGuide(stepNum, mode) {
       </div>
     </div>` : '';
 
-  // Compact tip for this step
-  const tipCard = g.tip ? `
-    <div class="tip-box" style="margin:0 0 12px">
-      <div class="tip-box-hd"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 5v3M8 11v.5"/></svg>Tip for this step</div>
-      <div class="tip-box-text">${g.tip}</div>
-    </div>` : '';
-
-  return stepperCard + adminMeta + merchantMeta + tipCard;
+  // Tip moved to the top of the form (renderStepContent) so it's read before filling.
+  return stepperCard + adminMeta + merchantMeta;
 }
 
 // Progress bar renderer
